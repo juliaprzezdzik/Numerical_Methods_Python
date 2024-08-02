@@ -1,0 +1,357 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage{tabularx} 
+\usepackage{geometry} 
+\usepackage{siunitx} 
+\usepackage{caption}
+\usepackage{amsmath} 
+\usepackage{float}
+\usepackage{array} 
+\captionsetup[figure]{labelformat=empty} 
+\usepackage{placeins}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{fancyhdr,lastpage}
+\usepackage{fancyvrb}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tikz}
+\pagestyle{fancy}
+\newgeometry{tmargin=2cm, bmargin=2cm, lmargin=2cm, rmargin=2cm}
+\Large %wielkosc czcionki
+
+\begin{document}
+\Large
+
+\title{\LARGE Sprawozdanie nr 12 z przedmiotu Metody Numeryczne\\
+       \LARGE Całkowanie numeryczne metodą Simpsona}
+\author{Julia Przeździk}
+\date{12 czerwca 2024 r.}
+\maketitle
+
+\rhead{\small{Całkowanie numeryczne metodą Simpsona}}
+\lhead{\small{Metody Numeryczne}}
+\cfoot{Strona \thepage\ z \pageref{LastPage}} 
+\large
+
+\section{Cel ćwiczenia}
+
+Zadanie polegało na zaznajomieniu się z algorytmem całkowania z wykorzystaniem wzoru parabol, czyli metodą Simpsona i obliczeniem za jej pomocą wartości całki oznaczonej. 
+
+\section{Opis problemu}
+
+Celem ćwiczenia było obliczenie numeryczne całki typu:
+\begin{equation*}
+    I = \int_0^\pi x^m \sin(kx) \, dx
+\end{equation*}
+metodą Simpsona. W celu sprawdzenia poprawności metody trzeba dysponować wartościami dokładnymi, które można dość łatwo obliczyć korzystając z rozwinięcia funkcji \(\sin(x)\) w szereg:
+\begin{equation*}
+    \sin(x) = \sum_{i=0}^\infty (-1)^i \frac{x^{2i+1}}{(2i+1)!}
+\end{equation*}
+
+\noindent
+Wstawiając powyższe rozwinięcie pod całkę i wykonując całkowanie każdego elementu szeregu powstaje:
+\begin{equation*}
+    I = \int_a^b x^m \sin(kx) \, dx = \int_a^b \sum_{i=0}^\infty (-1)^i \frac{(kx)^{2i+1} x^m}{(2i+1)!} \, dx
+\end{equation*}
+\begin{equation*}
+    = \sum_{i=0}^\infty (-1)^i \int_a^b \frac{(kx)^{2i+1+m}}{(2i+1)!} \, dx
+\end{equation*}
+
+\noindent
+Jeśli wartość \(x-a\) nie jest zbyt duża to sumę szeregu można łatwo obliczyć sumując tylko 20-30 pierwszych wyrazów.
+\\
+\noindent
+W zadaniu należało obliczyć wartość całki typu (1) metodą rozwinięcia funkcji podcałkowej w szereg dla
+\begin{itemize}
+    \item[a)] \(m = 0, k = 1\) (I = 2)
+    \item[b)] \(m = 1, k = 1\) (I = $\pi$)
+    \item[c)] \(m = 5, k = 5\) (I = 56.363569)
+\end{itemize}
+\noindent 
+W każdym z powyższych przypadków do pliku należało zapisać wartości sum, gdy liczba sumowanych wyrazów jest równa \(l = 1, 2, 3, \dots, 30\) 
+\\
+\noindent
+Następnie należało wartość całki typu (1) metodą Simpsona dla następującej liczby węzłów n = 2p + 1 = 11, 21, 51, 101, 201 oraz poniższych przypadków:
+\begin{itemize}
+    \item[a)] \(m = 0, k = 1\)
+    \item[b)] \(m = 1, k = 1\)
+    \item[c)] \(m = 5, k = 5\)
+\end{itemize}
+\noindent
+Wyniki należało zapisać do pliku,  a nasyępnie wygenerować wykresy zależności |C-I| od ilości węzłów, gdzie I to wartość dokładna całki, a C to wartość całki obliczona numerycznie. 
+
+\section{Część teoretyczna}
+Metoda Simpsona opiera się na przybliżaniu funkcji całkowanej przez interpolację wielomianem drugiego stopnia.
+\noindent
+Znając wartości \(y_0, y_1, y_2\) funkcji \(f(x)\) w 3 punktach \(x_0, x_1, x_2\) (przy czym \(x_2 - x_1 = x_1 - x_0 = h\)), przybliża się funkcję wielomianem Lagrange'a i całkując w przedziale \([x_0, x_2]\), otrzymuje przybliżoną wartość całki:
+\[
+\int_{x_0}^{x_2} f(x) \, dx \approx \frac{h}{3} (y_0 + 4y_1 + y_2).
+\]
+Błąd, który przy tym się popełnia, jest równy:
+\[
+R = -\frac{1}{90} h^5 |f^{(4)}(c)|,
+\]
+gdzie:
+\(c \in [x_0; x_2]\).
+
+\noindent
+Położenie punktu \(c\) jest nieznane, więc należy posłużyć się poniższym szacowaniem, mającym zastosowanie w obliczeniach numerycznych:
+\[
+R \leq \frac{1}{90} h^5 \max_{x\in[x_0;x_2]} |f^{(4)}(x)|.
+\]
+Znając wartości funkcji w \(2k + 1\) kolejnych, równo odległych punktach \(x_0, x_1, \ldots, x_n\) (gdzie \(n = 2k\)), można iterować powyższy wzór na \(k\) przedziałów:
+\[
+\int_{x_0}^{x_n} f(x) \, dx = \sum_{i=1}^k \int_{x_{2i-2}}^{x_{2i}} f(x) \, dx \approx \frac{h}{3} \left( y_0 + 4 \sum_{i=1}^k y_{2i-1} + 2 \sum_{i=1}^{k-1} y_{2i} + y_n \right).
+\]
+Wartość błędu, jakim są obarczone wyliczenia, wyraża się wzorem:
+\[
+R \leq \frac{1}{180} (x_n - x_0) h^4 \max_{x\in[x_0;x_n]} |f^{(4)}(x)|.
+\]
+Geometrycznie metoda ta odpowiada zastąpieniu w każdym z kolejnych \(k\) przedziałów zmiennej \(x\) łuku wykresu funkcji \(y = f(x)\) łukiem paraboli przeprowadzonej przez trzy kolejne węzły interpolacji odpowiadające początkowi, środkowi i końcowi kolejnego przedziału.
+
+\newpage
+\section{Wykorzystanie metody i otrzymane wyniki} 
+\subsection{m = 0 oraz k = 1}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cccc}
+\toprule
+l & C & I & |C-I| \\
+\midrule
+1 & 4.934802200544678 & 2.0 & 2.934802200544678 \\
+2 & 0.8760900741279105 & 2.0 & -1.1239099258720895 \\
+3 & 2.2113528429824996 & 2.0 & 0.21135284298249957 \\
+4 & 1.9760222126236064 & 2.0 & -0.023977787376393556 \\
+5 & 2.0018291040136207 & 2.0 & 0.001829104013620686 \\
+6 & 1.9998995297042168 & 2.0 & -0.00010047029578319489 \\
+7 & 2.000004167809142 & 2.0 & 4.167809141808476e-06 \\
+8 & 1.9999998647395547 & 2.0 & -1.352604452886652e-07 \\
+9 & 2.0000000035290793 & 2.0 & 3.5290792510522806e-09 \\
+10 & 1.9999999999243485 & 2.0 & -7.565148507637787e-11 \\
+11 & 2.000000000001356 & 2.0 & 1.3558043576722412e-12 \\
+12 & 1.999999999999979 & 2.0 & -2.1094237467877974e-14 \\
+13 & 1.9999999999999998 & 2.0 & -2.220446049250313e-16 \\
+14 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+15 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+16 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+17 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+18 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+19 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+20 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+21 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+22 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+23 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+24 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+25 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+26 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+27 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+28 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+29 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+30 & 1.9999999999999996 & 2.0 & -4.440892098500626e-16 \\
+\bottomrule
+\end{tabular}
+\caption*{\textbf{Tabela nr 1:} Wartości całki obliczonej z sumy l wyrazów}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cccc}
+\toprule
+\(n\) & I & C & |C-I| \\
+\midrule
+11 & 2.000 & 2.0000526243411856 & \(5.26243411855809 \times 10^{-5}\) \\
+21 & 2.000 & 2.000004631498475 & \(4.6314984749606936 \times 10^{-6}\) \\
+51 & 2.000 & 2.0000001480922562 & \(1.4809225623579891 \times 10^{-7}\) \\
+101 & 2.000 & 2.000000010000123 & \(1.0000122951936419 \times 10^{-8}\) \\
+201 & 2.000 & 2.0000000006500764 & \(6.500764371253354 \times 10^{-10}\) \\
+\bottomrule
+\end{tabular}
+\caption*{\textbf{Tabela nr 2:} Wartości całki obliczone analitycznie oraz metodą Simpsona}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Zrzut ekranu 2024-06-13 o 15.09.32.png}
+    \caption{\textbf{Wykres nr 1:} Błąd wyznaczenia całki z sumy szeregu w zależności od liczby uwzględnianych wyrazów}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Zrzut ekranu 2024-06-13 o 14.17.56.png}
+    \caption*{\textbf{Wykres nr 2:} Błąd wyznaczenia całki metodą Simpsona w zależności od liczby użytych węzłów }
+    \label{fig:enter-label}
+\end{figure}
+
+\newpage
+\subsection{m = 1 oraz k = 1}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cccc}
+\toprule
+l & C & I & |C-I| \\
+\midrule
+1 & 10.335425560099939 & 3.141592653589793 & 7.193832906510146 \\
+2 & 0.13476940059055842 & 3.141592653589793 & -3.0068232529992347 \\
+3 & 3.7303565765153093 & 3.141592653589793 & 0.5887639229255162 \\
+4 & 3.0731894836262836 & 3.141592653589793 & -0.06840316996350948 \\
+5 & 3.1468937930834273 & 3.141592653589793 & 0.005301139493634199 \\
+6 & 3.141298159414216 & 3.141592653589793 & -0.0002944941755771424 \\
+7 & 3.1416049743624854 & 3.141592653589793 & 1.2320772692309134e-05 \\
+8 & 3.141592251076083 & 3.141592653589793 & -4.025137099183951e-07 \\
+9 & 3.1415926641478054 & 3.141592653589793 & 1.0558012242256609e-08 \\
+10 & 3.141592653362476 & 3.141592653589793 & -2.273172761135811e-10 \\
+11 & 3.1415926535938823 & 3.141592653589793 & 4.0891734442993766e-12 \\
+12 & 3.1415926535897296 & 3.141592653589793 & -6.350475700855895e-14 \\
+13 & 3.1415926535897927 & 3.141592653589793 & -4.440892098500626e-16 \\
+14 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+15 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+16 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+17 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+18 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+19 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+20 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+21 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+22 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+23 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+24 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+25 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+26 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+27 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+28 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+29 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+30 & 3.141592653589792 & 3.141592653589793 & -1.3322676295501878e-15 \\
+\bottomrule
+\end{tabular}
+\caption*{\textbf{Tabela nr 3:} Wartości całki obliczonej z sumy l wyrazów}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cccc}
+\toprule
+\(n\) & I & C & |C-I| \\
+\midrule
+11 & 3.14159 & 3.1416753157116277 & \(8.266212183460908 \times 10^{-5}\) \\
+21 & 3.14159 & 3.1415999287305847 & \(7.275140791573875 \times 10^{-6}\) \\
+51 & 3.14159 & 3.1415928862125653 & \(2.3262277215607696 \times 10^{-7}\) \\
+101 & 3.14159 & 3.1415926692979497 & \(1.570815655327351 \times 10^{-8}\) \\
+201 & 3.14159 & 3.1415926546109305 & \(1.0211373968616044 \times 10^{-9}\) \\
+\bottomrule
+\end{tabular}
+\caption*{\textbf{Tablea nr 4:} Wyniki przybliżeń oraz błędów obliczeń dla różnych wartości \(n\)}
+\end{table}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Zrzut ekranu 2024-06-13 o 15.11.36.png}
+    \caption{\textbf{Wykres nr 3:} Błąd wyznaczenia całki z sumy szeregu w zależności od liczby uwzględnianych wyrazów}
+    \label{fig:enter-label}
+\end{figure}
+
+\newpage
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Zrzut ekranu 2024-06-13 o 14.19.51.png}
+    \caption{\textbf{Wykres nr 4:} Błąd wyznaczenia całki metodą Simpsona w zależności od liczby użytych węzłów}
+    \label{fig:enter-label}
+\end{figure}
+
+\newpage
+\subsection{m = 5 oraz k = 5}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cccc}
+\toprule
+l & C & I & |C-I|\\
+\midrule
+1 & 2157.352305554851 & 56.363569 & 2100.9887365548507 \\
+2 & -66845.19244779284 & 56.363569 & -66901.55601679283 \\
+3 & 629660.5319222129 & 56.363569 & 629604.1683532129 \\
+4 & -2832637.8009023084 & 56.363569 & -2832694.1644713082 \\
+5 & 7450456.949696764 & 56.363569 & 7450400.586127765 \\
+6 & -12901831.260329604 & 56.363569 & -12901887.623898605 \\
+7 & 15900239.97725946 & 56.363569 & 15900183.61369046 \\
+8 & -14717877.550478444 & 56.363569 & -14717933.914047444 \\
+9 & 10641628.753875364 & 56.363569 & 10641572.390306363 \\
+10 & -6190625.005512893 & 56.363569 & -6190681.369081893 \\
+11 & 2965442.33266565 & 56.363569 & 2965385.9690966504 \\
+12 & -1191404.109057895 & 56.363569 & -1191460.472626895 \\
+13 & 407744.3696258862 & 56.363569 & 407688.0060568862 \\
+14 & -120262.02850024332 & 56.363569 & -120318.39206924332 \\
+15 & 31013.5441024279 & 56.363569 & 30957.180533427898 \\
+16 & -6952.201320256121 & 56.363569 & -7008.564889256121 \\
+17 & 1463.7823507273515 & 56.363569 & 1407.4187817273514 \\
+18 & -196.10428058375282 & 56.363569 & -252.4678495837528 \\
+19 & 97.07235555948074 & 56.363569 & 40.70878655948074 \\
+20 & 50.43038937633455 & 56.363569 & -5.9331796236654455 \\
+21 & 57.149122822834556 & 56.363569 & 0.785553822834558 \\
+22 & 56.26865964564566 & 56.363569 & -0.09490935435433556 \\
+23 & 56.37407689143207 & 56.363569 & 0.010507891432069982 \\
+24 & 56.362500051294276 & 56.363569 & -0.0010689487057220504 \\
+25 & 56.3636703740594 & 56.363569 & 0.0001013740594046908 \\
+26 & 56.36356110604268 & 56.363569 & -7.893957317151035e-06 \\
+27 & 56.363570557014 & 56.363569 & 1.5570140021736734e-06 \\
+28 & 56.36356979759418 & 56.363569 & 7.975941826998678e-07 \\
+29 & 56.3635698544334 & 56.363569 & 8.544334022531075e-07 \\
+30 & 56.36356985046117 & 56.363569 & 8.504611699322595e-07 \\
+\bottomrule
+\end{tabular}
+\caption*{\textbf{Tabela nr 3:} Wartości całki obliczonej z sumy l wyrazów}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cccc}
+\toprule
+\(n\) & I & C & |C-I| \\
+\midrule
+11 & 56.363569 & 57.12168906428343 & 0.7581200642834318 \\
+21 & 56.363569 & 56.431309101372385 & 0.06774010137238662 \\
+51 & 56.363569 & 56.365718530788605 & 0.0021495307886070236 \\
+101 & 56.363569 & 56.36371469117316 & 0.00014569117315943458 \\
+201 & 56.363569 & 56.363579257650436 & \(1.0257650437495158 \times 10^{-5}\) \\
+\bottomrule
+\end{tabular}
+\caption*{Wyniki przybliżeń oraz błędów obliczeń dla różnych wartości \(n\)}
+\end{table}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Zrzut ekranu 2024-06-13 o 15.13.06.png}
+    \caption{\textbf{Wykres nr 5:} Błąd wyznaczenia całki z sumy szeregu w zależności od liczby uwzględnianych wyrazów}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Zrzut ekranu 2024-06-13 o 14.21.11.png}
+    \caption{\textbf{Wykres nr 6:} 2: Błąd wyznaczenia całki metodą Simpsona w zależności od liczby użytych węzłów}
+    \label{fig:enter-label}
+\end{figure}
+
+\section{Wnioski}
+Metoda rozwinięcia funkcji w szereg wykazała wysoką dokładność w obliczaniu całki oznaczonej. Dla przypadku m=0,k=1 błąd całkowania szybko malał wraz ze wzrostem liczby uwzględnianych wyrazów szeregu, osiągając wartość zbliżoną do zera już przy kilkunastu wyrazach. Podobnie, dla  m=1,k=1 oraz m=5,k=5, metoda ta była w stanie precyzyjnie przybliżyć wartość całki, co potwierdza skuteczność tego sposobu obliczeniach całkowych.\\
+\noindent
+Metoda Simpsona również wykazała wysoką dokładność w obliczaniu wartości całki, co jest widoczne na wykresach zależności błędu $∣C-I∣$ od liczby węzłów. Dla wszystkich trzech przypadków błąd wyznaczenia całki malał wraz ze wzrostem liczby węzłów, co potwierdza teoretyczne właściwości tej metody. Warto jednak zauważyć, że dla większych wartości $(m=5,k=5)$ liczba węzłów miała większy wpływ na dokładność obliczeń, co jest zgodne z oczekiwaniami, gdyż funkcja podcałkowa staje się bardziej skomplikowana.
+\\
+\noindent
+Porównując obie metody, zarówno metoda rozwinięcia w szereg, jak i metoda Simpsona wykazały się wysoką dokładnością w obliczaniu całek oznaczonych. Metoda Taylora okazała się być bardzo efektywna, osiągając wysoką precyzję przy relatywnie małej liczbie wyrazów szeregu. Metoda Simpsona, choć również bardzo dokładna, wymagała większej liczby węzłów dla funkcji o bardziej skomplikowanej postaci (wyższe wartości m i k).
+\\
+\noindent
+W praktyce, wybór metody całkowania numerycznego może zależeć od specyficznych wymagań problemu oraz dostępnych zasobów obliczeniowych. Metoda Taylora może być korzystna w przypadkach, gdy funkcja podcałkowa może być łatwo rozwinięta w szereg i nie jest zbyt skomplikowana. Metoda Simpsona jest natomiast bardziej uniwersalna i może być stosowana do szerokiego zakresu funkcji, jednak może wymagać większej liczby obliczeń, szczególnie dla funkcji o bardziej skomplikowanej strukturze.
+\\
+\noindent
+Podsumowując, obie metody są skuteczne i mogą być stosowane w różnych kontekstach w zależności od specyfiki problemu. Wyniki uzyskane w ćwiczeniu potwierdzają teoretyczne założenia dotyczące dokładności i zbieżności obu metod całkowania numerycznego. 
+
+\end{document}
