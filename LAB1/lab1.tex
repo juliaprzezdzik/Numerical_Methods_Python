@@ -1,0 +1,150 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[utf8]{inputenc} % Kodowanie UTF-8 umożliwia używanie polskich znaków
+\usepackage[T1]{fontenc} % Obsługa fontów z kodyfikacją T1 dla poprawnego zapisu polskich znaków w PDF
+\usepackage{tabularx} % Importuj pakiet tabularx do odpowiedniego rozmiaru tabeli
+\usepackage{geometry} %np do zmieniania marginesow
+\usepackage{float}
+\usepackage{caption}
+\usepackage{amsmath} 
+\usepackage{tocloft}
+\newgeometry{tmargin=2cm, bmargin=2cm, lmargin=2cm, rmargin=2cm}
+\Large %wielkosc czcionki
+\renewcommand{\contentsname}{Spis Treści}
+\begin{document}
+\Large
+\begin{center}
+{\LARGE \textbf{Sprawozdanie nr 1 z przedmiotu Metody Numeryczne}}
+\\
+{\large{Rozwiązywanie układów równań liniowych metodami bezpośrednimi}}
+\\
+{\large{Julia Przeździk}}
+\\
+\normalsize{5 marca 2024 r.}
+\\
+\end{center}
+\large
+\tableofcontents
+\newpage
+\section{Cel ćwiczenia}
+Celem zadania było rozwiązanie układu równań liniowych przy pomocy metody Gaussa oraz metody Gaussa-Jordana. Obliczenia należało wykonać poprzez zaimplementowanie odpowiednich funkcji w wybranym języku programowania. Umożliwiło to zapoznanie się ze sposobem przeprowadzania zajęć na przedmiocie Metody Numeryczne. 
+\section{Opis problemu}
+Układ równań liniowych należało przedstawić w postaci iloczynu macierzy Vandermonde'a (A) oraz wektora współczynników przyrównanego do wektora wyrazów wolnych b. Przy wykorzystaniu wektora punktów X oraz wektora C obliczono wektor rozwiązań b, gdzie 
+\[
+X = \begin{pmatrix}
+-2 & -1 & 0.1 & 1 & 2 & 3
+\end{pmatrix}
+\]
+\begin{center}
+oraz
+\end{center}
+\[
+C = \begin{pmatrix}
+0.5 & 1 & 2 & -0.2 & 3 & -70
+\end{pmatrix}
+\]
+Następnie przy użyciu metody Gaussa oraz metodą Gaussa-Jordana obliczono wektor C współczynników wielomianu interpolacyjnego i sprawdzono jego zgodność z podanymi wyżej wartościami. Dla obliczonych punktów poprowadzono wielomian interpolacyjny i przedstawiono go na wykresie. 
+
+\section{Część teoretyczna}
+\subsection{Układy równań liniowych}
+Układ równań liniowych postaci 
+\[
+\left\{
+\begin{aligned}
+c_0 + c_1 x_1 + c_2 x_1^2 + \ldots + c_{n-2}x_1^{n-2} + c_{n-1}x_1^{n-1} &= y_1 \\
+c_0 + c_1 x_2 + c_2 x_2^2 + \ldots + c_{n-2}x_2^{n-2} + c_{n-1}x_2^{n-1} &= y_2 \\
+&\vdots \\
+c_0 + c_1 x_n + c_2 x_n^2 + \ldots + c_{n-2}x_n^{n-2} + c_{n-1}x_n^{n-1} &= y_n
+\end{aligned}
+\right.
+\]
+można rozwiązać przy pomocy macierzy Vandermonde'a, czyli macierzy kwadratowej, w której każdy wiersz reprezentuje kolejny punkt danych, a kolumny zawierają potęgi odpowiadających im wartości x:
+\[
+A = \begin{pmatrix}
+& 1 & x_1 & x^2_1& ... & x^{n-1}_1\\
+& 1 &x_2  & x^2_2 & ... & x^{n-1}_2\\
+&. & . &  .& ... & .\\
+&. & .& . & ... & . \\
+& .& .& .& ... & .\\
+& 1 & x_n & .& ...& x^{n-1}_n
+\end{pmatrix}
+\]
+Układ rozwiązuje się poprzez przekształcenie go do postaci Ax = b, gdzie x jest wektorem wartości argumentów x dla punktów danych, a b jest wektorem wartości oczekiwanych dla tych punktów. 
+\subsection{Wielomian interpolacyjny}
+Interpolacja wielomianowa to metoda numeryczna wykorzystywana do określania funkcji przechodzącej przez zbiór znanych punktów danych. Wielomianem interpolacyjnym nazywamy wielomian w(x) ($w \in W_n$) stopnia n-1 spełniający zależność w($x_i$) = $y_i$ gdzie ($x_i$, $y_i$) to parami różne punkty (i = 0, 1,...,n). Do wygenerowania wykresu funkcji należy wybrać n+1 węzłów interpolacji $x_{0}$, $x_{1}$,...,$x_{n}$ ($x \in f$) oraz odpowiadające im wartości $y_{0}$, $y_{1}$,...,$y_{n}$ a następnie utworzyć wielomian $\phi{(x)}$, dla którego $\phi{(x_0)}$ =  $y_{0}$, $\phi{(x_1)}$ =  $y_{1}$,...,$\phi{(x_n)}$ =  $y_{n}$.
+\subsection{Metoda eliminacji Gaussa}
+Metoda ta pozwala na rozwiązanie układu równań liniowych poprzez przekształcenie macierzy kwadratowej stopnia n do macierzy trójkątnej górnej, a następnie wyliczenie wartości $x_i$. Macierzą trójkątną górną nazywamy macierz, której elementy $a_{ij}$ = 0 dla i > j. Eliminację Gaussa rozpoczyna się od odjęcia wyrażenia
+\begin{equation}
+    l_{i1} = \frac{a_{i1}^{(1)}}{a_{11}^{(1)}}
+\end{equation}
+pomnożonego przez pierwszy wiersz od i-tego wiersza macierzy (gdzie i = 2, 3, ..., n). Następnie analogicznie  wyrażenie 
+\begin{equation}
+    l_{i1} = \frac{a_{i2}}{a_{22}}
+\end{equation}
+pomnożone przez drugi wiersz odejmuje się kolejno od trzeciego do ostatniego wiersza. Zabieg wykonuje się n-1 razy, czyli do momentu otrzymania macierzy trójkątnej górnej.
+Powstanie w ten sposób macierz postaci:
+\[
+A = \begin{pmatrix}
+a_{11}^{(n)} & a_{12}^{(n)} & a_{13}^{(n)} & ... &  a_{1n}^{(n)}\\
+0 & . & . & ...& .\\
+. & . & . &... & .\\
+0 & . &  & ... & .\\
+0 & 0 & 0 & ... & a_{nn}^{(n)}
+\end{pmatrix}
+\]
+oraz 
+\[
+\vec{b} = \begin{pmatrix} b_{1}^{(n)} \\ \vdots \\ b_{n}^{(n)} \end{pmatrix}
+\quad
+\vec{x} = \begin{pmatrix} x_{1} \\ \vdots \\ x_{n} \end{pmatrix}
+\]
+Współrzędne wektora $\vec{x}$ można więc obliczyć za pomocą wzorów:
+\begin{equation}
+    x_n = \frac{b_n^{(n)}}{a_{nn}^{(n)}}
+\end{equation}
+\begin{equation}
+x_i = \frac{b_i^{(n)} - \sum_{j=i+1}^{n} a_{ij}^{(n)} x_j}{a_{ii}^{(n)}}
+\end{equation}
+\newpage
+\subsection{Metoda eliminacji Gaussa-Jordana}
+Metoda Gaussa-Jordana, czyli metoda eliminacji zupełnej polega na sprowadzeniu macierzy A do postaci macierzy jednostkowej, a następnie wyznaczeniu $x_i$. Macierzą jednostkową nazywamy macierz kwadratową, w której $a_{ij}$ = 0 dla i $\not=$ j oraz $a_{ij} = 1$ dla i = j. W macierzy uzupełnionej U, czyli macierzy postaci
+\[
+\begin{pmatrix}
+a_{11} & a_{12} & a_{13} & ... &  b_{1}\\
+. & . & . &... & .\\
+. & . & . & ... & .\\
+a_{n1} & a_{n2} & . & ... & b_{n}
+\end{pmatrix}
+\]
+należy podzielić każdy j-ty wiersz przez $a_{jj}$, po czym odjąć od każdego i-tego wiersza (z pominięciem wierszy, w których i = j) j-ty wiersz pomnożony przez $a_{ij}$. W rezultacie otrzymujemy macierz jednostkową oraz równania:
+\begin{align*}
+&x_1 = b_1\\
+&x_2 = b_2\\
+&.\\
+&.\\
+&.\\
+&x_n = b_n
+\end{align*}
+zatem wektor niewiadomych po n operacjach jest równy wektorowi współczynników: 
+\begin{center}
+$\vec{x} = \vec{b}$
+\end{center}
+\newpage
+\section{Wykorzystanie metod}
+Przedstawione metody wykorzystano do obliczenia zadania  za pomocą programu w języku Python: wprowadzono dane wejściowe, a następnie korzystając z odpowiednich funkcji stworzono macierz Vandermonde'a i wyliczono wektor współrzędnych oraz wektor rozwiązań. Następnie stworzono wielomian interpolacyjny przy pomocy programu MatLab.\\
+Po wprowadzeniu danych otrzymano wektor współrzędnych y:
+\[ b = \begin{pmatrix} 2296.1 & 74.7 & 0.6194 & -63.7 & -2183.1 & -16750.9 \end{pmatrix} \]
+Obliczony wektor współczynników wielomianu interpolacyjnego był zgodny z danymi wejściowymi, zatem układ równań liniowych został rozwiązany prawidłowo.
+Wielomian interpolacyjny w(x) dla obliczonych wyników z punktami interpolacyjnymi w zakresie [-5,5]:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\linewidth]{Zrzut ekranu 2024-03-7 o 10.58.32.png}
+    \label{fig:enter-label}
+\end{figure}
+\newpage
+\section{Interpretacja wyników}
+Do wygenerowania powyższego wykresu wykorzystano 100 punktów interpolacji, aby jak najdokładniej odwzorować funkcję. Wielomian interpolacyjny przechodzi dokładnie przez wszystkie punkty danych, zatem układ równań został rozwiązany tak, że wszystkie dane wejściowe są spełnione.
+Sposób rozwiązania zadania polegający na wybraniu wartości wektorów X oraz C, a następnie wyliczeniu wektora rozwiązań b oraz sprawdzeniu zgodności wyniku umożliwił stwierdzenie, że program działa poprawnie. 
+\section{Wnioski}
+Otrzymane wyniki pokazały, że wykorzystane metody numeryczne są odpowiednie do rozwiązywania układów równań liniowych, ponieważ pokryły się z rozwiązaniami wykonanymi analitycznie. Zadanie to umożliwiło pierwszy kontakt z metodami numerycznymi oraz porównanie ich do klasycznych sposobów rozwiązywania zadań wykorzystywanych na ćwiczeniach audytoryjnych. Jako że zadanie zostało wykonane dla określonych danych wejściowych, należy pamiętać, że metody te mogą być niekoniecznie skuteczne na przykład dla macierzy większych rozmiarów czy układów równań o szczególnych właściwościach. Jednakże, w tym konkretnym przypadku metoda Gaussa oraz metoda Gaussa-Jordana znalazły swoje zastosowanie.
+\end{document}
