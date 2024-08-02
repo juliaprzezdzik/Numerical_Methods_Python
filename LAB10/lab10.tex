@@ -1,0 +1,185 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage{tabularx} 
+\usepackage{geometry} 
+\usepackage{siunitx} 
+\usepackage{caption}
+\usepackage{amsmath} 
+\usepackage{float}
+\usepackage{array} 
+\captionsetup[figure]{labelformat=empty} 
+\usepackage{placeins}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{fancyhdr,lastpage}
+\usepackage{fancyvrb}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{tikz}
+\pagestyle{fancy}
+\newgeometry{tmargin=2cm, bmargin=2cm, lmargin=2cm, rmargin=2cm}
+\Large %wielkosc czcionki
+
+\begin{document}
+\Large
+
+\title{\LARGE Sprawozdanie nr 11 z przedmiotu Metody Numeryczne\\
+       \LARGE Odszumianie sygnału przy użyciu FFT - splot funkcji}
+\author{Julia Przeździk}
+\date{4 czerwca 2024 r.}
+\maketitle
+
+\rhead{\small{Odszumianie sygnału przy użyciu FFT}}
+\lhead{\small{Metody Numeryczne}}
+\cfoot{Strona \thepage\ z \pageref{LastPage}} 
+\large
+
+\section{Cel ćwiczenia}
+
+Zadanie polegało na zapoznaniu się z problemem odszumiania sygnału i wykorzystaniu go do stworzenia odpowiedniej funkcji. Ćwiczenie miało zaprezentować zastosowanie algorytmu szybkiej transformaty Fouriera w praktyce. 
+
+\section{Opis problemu}
+
+Splot dwóch funkcji definiujemy się następująco:
+\begin{equation*}
+    (f * g)(t) = \int_{-\infty}^{\infty} f(\tau) g(t - \tau) d\tau
+\end{equation*}
+
+\noindent
+Jeśli funkcję \(f(t)\) potraktuje się jako sygnał a funkcję \(g(t)\) jako wagę, to splot obu funkcji można potraktować jako uśrednienie funkcji \(f\) pewną ustaloną funkcją wagową \(g\). Wykorzystuje się ten fakt do wygładzenia zaszumionego sygnału. Aby przeprowadzić efektywnie obliczenia, do obliczenia splotu wykorzystuje się FFT:
+
+\begin{equation*}
+    \text{FFT}\{f(t) * g(t)\} = \text{FFT}\{f\} \cdot \text{FFT}\{g\} = f(k) \cdot g(k)
+\end{equation*}
+\begin{equation*}
+    f * g = \text{FFT}^{-1}\{f(k) \cdot g(k)\}
+\end{equation*}
+
+\noindent
+Jako sygnał przyjmuje się:
+\[
+f(t) = f_0(t) + \Delta
+\]
+
+\noindent
+gdzie:
+\begin{equation*}
+    f_0(t) = \sin(\omega t) + \sin(2 \omega t) + \sin(3 \omega t)
+\end{equation*}
+jest sygnałem niezaburzonym, \(\omega = \frac{2\pi}{T}\) - pulsacja, \(T\) - okres, \(\Delta\) jest liczbą pseudolosową, z zakresu \([-1/2, 1/2]\). Jako funkcję wagową przyjmuje się funkcję gaussowską:
+\begin{equation*}
+    g(t) = \frac{1}{\sigma\sqrt{2\pi}} \exp\left(-\frac{t^2}{2\sigma^2}\right)
+\end{equation*}
+
+\noindent
+Należało przyjąć parametry:
+\noindent
+$N_k = 2^k$, $k = 8, 10, 12$ - liczba węzłów, $T = 1.0,$\\ $t_{\max} = 3$T - maksymalny okres czasu trwania sygnału,
+$dt = \frac{t_{\max}}{N_k} $- krok czasowy, $\sigma = \frac{T}{20}$ - odchylenie standardowe
+
+
+\newpage
+\noindent
+Następnie należało utworzyć pętlę zewnętrzną po \( k = 8, 10, 12 \), wyznaczyć w niej \( N_k \), i utworzyć tablicę (o długości \( 2 \cdot N_k \)):
+\begin{enumerate}
+    \item \( f_0[ ] \) dla sygnału bez szumu 
+    \item \( f_1 \) dla sygnału z szumem 
+    \item \( g_1 \) i \( g_2 \) - funkcje wagowe
+\end{enumerate}
+
+\noindent
+W pętli (po \( k \)) należy dalej:
+\begin{enumerate}
+    \item Wypełnić tablicę odpowiednimi wartościami.
+    \item Obliczyć transformaty:
+    \[
+    f_k = \text{FFT}\{f\}, \quad g_1(k) = \text{FFT}\{g_1\}, \quad g_2(k) = \text{FFT}^{-1}\{g_2\}
+    \]
+    \item Obliczyć transformatę splotu, czyli iloczyn: \( f_k \cdot (g_1(k) + g_2(k)) \), wynik wpisać do tablicy \( f \).
+    \item Obliczyć:
+    \[
+    \text{FFT}^{-1}\{f(k)\} \quad \text{- w tablicy pojawia się wówczas splot } f(t) * g(t) \quad \text{(czyli wygładzona funkcja } f(t) \text{)}
+    \]
+    \item Dla tablicy \( f \) znaleźć element o maksymalnym module \( f_{\max} = \max\left| f[2 \cdot i - 1] \right|, \quad i = 1, \ldots, n \)
+    \item Zapisać do pliku: sygnał niezaburzony (tablica \( f_0 \)) oraz splot (tablica \( f \)) po normalizacji
+    
+\end{enumerate}
+
+\noindent
+Następnie dla każdego \( N_k \) należało zrobić rysunek przedstawiający wykresy sygnału niezaburzonego i znormalizowanego splotu. 
+
+
+
+\section{Część teoretyczna}
+
+\subsection{Transformata Fouriera}
+Transformata Fouriera jest zdefiniowana dla specyficznych przestrzeni funkcji rzeczywistych. Definiuje sposób reprezentacji tych funkcji poprzez serie funkcji trygonometrycznych, bazując na ich iloczynie skalarnym.
+
+\noindent
+Podczas próby obliczenia dyskretnej transformaty Fouriera (DFT) z jej formalnej definicji:
+\begin{equation*}
+    DFT = X_k = \sum_{n=0}^{N-1} x_n \cdot e^{- \frac{2\pi i k n}{N}}
+\end{equation*}
+należy zauważyć, że \( i \) jest jednostką urojoną, \( k \) oznacza numer harmoniczny, \( n \) to indeks próbki sygnału, \( x_n \) jest amplitudą próbki, a \( N \) jest całkowitą liczbą próbek. Szybko okazuje się, że jest to algorytm o złożoności obliczeniowej \( O(N^2) \), co skłoniło do rozwoju bardziej efektywnej metody.
+
+\noindent
+FFT, czyli szybka transformata Fouriera, to algorytm, który odznacza się znacznie mniejszą złożonością obliczeniową i przez to krótszym czasem realizacji obliczeń. Wykorzystujemy tę metodę w naszym zadaniu do obliczenia splotu funkcji:
+\begin{equation*}
+    FFT\{f(t) * g(t)\} = FFT\{f\} \cdot FFT\{g\} = f(k) \cdot g(k) \implies f * g = FFT^{-1}\{f(k) \cdot g(k)\}
+\end{equation*}
+
+\subsection{Szybka transformata Fouriera}
+
+\noindent
+Szybka transformacja Fouriera to algorytm wyznaczania dyskretnej transformaty Fouriera oraz transformaty do niej odwrotnej. Czasami, w odniesieniu do tej metody, używane jest także określenie \textit{szybka transformata Fouriera}, które jednak nie jest prawidłowe, gdyż pojęcie transformacja oznacza przekształcenie, a transformata jest wynikiem tego przekształcenia.
+
+\noindent
+Niech \(x_0, \dots, x_{N-1}\) będą liczbami zespolonymi, wtedy dyskretna transformata Fouriera jest określona wzorem:
+\begin{equation*}
+    X_k = \sum_{n=0}^{N-1} x_n e^{- \frac{2\pi i nk}{N}}, \quad k = 0, \dots, N - 1.
+\end{equation*}
+
+\noindent
+Obliczanie sum za pomocą powyższego wzoru wymaga wykonania \(O(N^2)\) operacji.
+
+\noindent
+Algorytmy obliczające szybką transformację Fouriera bazują na metodzie dziel i zwyciężaj, rekurencyjnie dzieląc transformacje wielkości \(N\) na transformacje wielkości \(N_1\) i \(N_2\) z wykorzystaniem \(O(N)\) operacji mnożenia.
+
+\noindent
+Najpopularniejszą wersją algorytmu FFT jest \textit{FFT o podstawie 2}. Jest on bardzo efektywny pod względem czasu realizacji, jednak wektor próbek wejściowych (próbkowany sygnał) musi mieć długość \(N = 2^k\), gdzie \(k\) to pewna liczba naturalna. Wynik otrzymuje się na drodze schematycznych przekształceń, opartych o tak zwane struktury motylkowe.
+
+\noindent
+Złożoność obliczeniowa szybkiej transformacji Fouriera wynosi \(O(N \log_2 N)\), w odróżnieniu od \(O(N^2)\) algorytmu wynikającego wprost ze wzoru określającego dyskretną transformatę Fouriera. Dzięki szybkiej transformacji Fouriera praktycznie możliwe stało się cyfrowe przetwarzanie sygnałów, a także zastosowanie dyskretnych transformat kosinusowych do kompresji danych audio-wideo.
+
+\section{Wykorzystanie metody i otrzymane wyniki} 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-06-5 o 18.06.28.png}
+    \caption{\textbf{Wykres nr 1:} Dane dla k = 8}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-06-5 o 18.07.53.png}
+    \caption{\textbf{Wykres nr 2:} Dane dla k = 10}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-06-5 o 18.08.28.png}
+    \caption{\textbf{Wykres nr 3: }Dane dla k = 12}
+    \label{fig:enter-label}
+\end{figure}
+
+\newpage
+\section{Wnioski}
+Analiza przeprowadzona za pomocą szybkiej transformaty Fouriera (FFT) pokazała, że ta metoda jest skuteczna w odszumianiu sygnałów, co stanowi kluczowe znaczenie dla przetwarzania danych cyfrowych. W trakcie zadania udało się zaobserwować, jak zwiększanie liczby próbek sygnału wpływa pozytywnie na jego odszumienie, poprawiając kształt sygnału po przetworzeniu. Dzięki większej liczbie próbek, sygnał staje się mniej podatny na lokalne fluktuacje, szczególnie w okolicy ekstremów lokalnych. Mimo że zaobserwowano także delikatne niedoszacowania ekstremów, co jest charakterystyczne dla metody FFT w zastosowaniach odszumiających, problem ten nie wydaje się być zależny od rozmiaru próbki.
+
+\end{document}
