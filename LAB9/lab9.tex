@@ -1,0 +1,182 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage{tabularx} 
+\usepackage{geometry} 
+\usepackage{siunitx} 
+\usepackage{caption}
+\usepackage{amsmath} 
+\usepackage{float}
+\usepackage{array} 
+\captionsetup[figure]{labelformat=empty} 
+\usepackage{placeins}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{fancyhdr,lastpage}
+\usepackage{fancyvrb}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{tikz}
+\pagestyle{fancy}
+\newgeometry{tmargin=2cm, bmargin=2cm, lmargin=2cm, rmargin=2cm}
+\Large %wielkosc czcionki
+
+\begin{document}
+\Large
+
+\title{\LARGE Sprawozdanie nr 10 z przedmiotu Metody Numeryczne\\
+       \LARGE Poszukiwanie minimum wartości funkcji metodą największego spadku w 2D}
+\author{Julia Przeździk}
+\date{24 maja 2024 r.}
+\maketitle
+
+\rhead{\small{Poszukiwanie minimum wartości funkcji}}
+\lhead{\small{Metody Numeryczne}}
+\cfoot{Strona \thepage\ z \pageref{LastPage}} 
+\large
+
+\section{Cel ćwiczenia}
+
+Ćwiczenie polegało na zapoznaniu się oraz zaimplementowaniu metody największego spadku w celu znalezienia minimum funkcji dwóch zmiennych. Następnie należało narysować na wykresie zadaną funkcję oraz kolejne przybliżenia minimum. 
+
+\section{Opis problemu i wykorzystanej metody}
+Funkcja, dla której należało wyznaczyć minimum przedstawia się następująco:
+
+\begin{equation*}
+f(\vec{r}) = f(x, y) = \frac{5}{2}(x^2 - y)^2 + (1 - x)^2
+\end{equation*}
+
+\noindent
+W celu stworzenia funkcji realizującej metodę największego spadku na początku należy wyznaczyć wzór na przybliżenie $\vec r$:
+
+\begin{equation*}
+\vec{r}_{i+1} = \vec{r}_i - h \cdot \nabla f(\vec{r}) \bigg|_{\vec{r}=\vec{r}_i}
+\end{equation*}
+
+\noindent
+$\nabla f(\vec{r})$ jest gradientem funkcji, który oblicza się za pomocą wzoru:
+
+\begin{equation*}
+\nabla f(\vec{r}) = \begin{bmatrix} \frac{\partial f}{\partial x}, \frac{\partial f}{\partial y} \end{bmatrix}
+\end{equation*}
+
+
+\noindent 
+Pochodne miały zostać obliczone numerycznie-przy pomocy poniższych zależności:
+
+\begin{equation*}
+\frac{\partial f(\vec{r})}{\partial x} = \frac{f(\vec{r} + \Delta \cdot \vec{e}_x) - f(\vec{r} - \Delta \cdot \vec{e}_x)}{2\Delta}
+\end{equation*}
+
+\begin{equation*}
+\frac{\partial f(\vec{r})}{\partial y} = \frac{f(\vec{r} + \Delta \cdot \vec{e}_y) - f(\vec{r} - \Delta \cdot \vec{e}_y)}{2\Delta}
+\end{equation*}
+
+\noindent
+$\vec e_x, \vec e_y$ to wersory układu kartezjańskiego, czyli wektory wyznaczające kierunek i mające długość równą 1. $\Delta$ miała przyjąć wartość $10^{-4}$. \\
+Szukanie minium należało rozpocząć od punktu $\vec r_0 = [-0.75, 1.75]$ oraz przyjąć wartość h = 0.1. Warunkiem zatrzymania się funkcji miała być ilość iteracji wynosząca 1000 lub $\|\vec{r}_{i+1} - \vec{r}_i\|_2 < \epsilon$. Obliczenia wykonano dla dwóch przypadków: $\epsilon = 10^{-2}$ oraz $\epsilon = 10^{-3}$ i dla każdego zmierzono ilość iteracji. 
+
+\section{Część teoretyczna}
+
+\subsection{Metoda największego spadku}
+
+Jest to metoda gradientowa służąca optymalizacji wartości funkcji, czyli znalezieniu jej minimum. 
+
+\noindent
+Na początku należy skorzystać z pochodnej kierunkowej funkcji w punkcie $\mathbf{x'}$: 
+
+\begin{equation*}
+\left.\frac{df(\mathbf{x'})}{d\lambda}\right|_{\mathbf{u}} = \frac{dF(\lambda)}{d\lambda} = \nabla^T f(\mathbf{x'}) \mathbf{u}
+\end{equation*}
+
+\noindent
+Oraz z nierówności Schwartza:
+\begin{equation*}
+\nabla^T f(\mathbf{x'}) \mathbf{u} \geq -\|\nabla^T f(\mathbf{x'})\| \cdot \|\mathbf{u}\| = -\|\nabla^T f(\mathbf{x'})\| \cdot 1
+\end{equation*}
+
+\noindent
+dla wektora kierunkowego długości 1. Wektor kierunkowy postaci
+\begin{equation*}
+\mathbf{u} = \frac{-\nabla f(\mathbf{x'})}{\|\nabla f(\mathbf{x'})\|}
+\end{equation*}
+
+\noindent
+będzie wskazywał kierunek największego spadku. Pochodna kierunkowa osiąga wtedy najmniejszą wartość:
+\begin{equation*}
+\frac{dF(\lambda)}{d\lambda} = -\nabla^T f(\mathbf{x'}) \frac{\nabla f(\mathbf{x'})}{\|\nabla f(\mathbf{x'})\|} = -1
+\end{equation*}
+
+\noindent
+Algorytm metody największego spadku prezentuje się następująco:
+\begin{itemize}
+    \item Należy wybrać $x^0$
+    \item Następnie iteracyjnie obliczać 
+        \begin{equation*}
+\mathbf{u}^i = \frac{-\nabla f(\mathbf{x}^{i-1})}{\|\nabla f(\mathbf{x}^{i-1})\|}
+\end{equation*}
+\begin{equation*}
+\mathbf{x}^i = \mathbf{x}^{i-1} + \lambda \mathbf{u}^i
+\end{equation*}
+\begin{equation*}
+\mathbf{x}^i = \mathbf{x}^{i-1} + \lambda \mathbf{u}^i
+\end{equation*}
+    \item Warunkami zakończenia obliczeń są zależności:
+    \begin{equation*}
+    \|\mathbf{x}^{i+1} - \mathbf{x}^i\| < \epsilon_1
+    \end{equation*}
+    \begin{equation*}
+    \|\nabla f(\mathbf{x}^i)\| < \epsilon_2
+    \end{equation*}
+    \begin{equation*}
+    |f(\mathbf{x}^i) - f(\mathbf{x}^{i-1})| < \epsilon_3
+    \end{equation*}
+    
+\end{itemize} 
+
+\section{Wykorzystanie metody oraz otrzymane wyniki}
+Dla podanej funkcji wejściowej gradient obliczony analitycznie wynosi:
+
+\begin{equation*}
+\nabla f = \begin{pmatrix} 10(x^2 - y)x + 2x - 2 \\ -5x^2 + 5y \end{pmatrix}
+\end{equation*}
+
+\noindent
+Przy pomocy języka Python zaimplementowano metodę i otrzymano następujące wyniki:
+\begin{itemize}
+    \item dla $\epsilon = 10^{-2}$ : x = 0.90003774, y = 0.79269503; liczba iteracji wyniosła 36
+    \item dla $\epsilon = 10^{-3}$ : x = 0.94920472, y = 0.62138625; liczba iteracji wykroczyła poza limit (1000) 
+\end{itemize}
+
+\noindent
+Następnie dla każdej z wartości $\epsilon$ sporządzono rysunek zawierający wykres funkcji oraz kolejne przybliżenia minimum połączone linią. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\linewidth]{Zrzut ekranu 2024-05-24 o 16.44.20.png}
+    \caption{\textbf{Rysunek nr 1:} Wykresy funkcji $f(x,y)$ wraz z przybliżeniami (dla h = 0.1)}
+    \label{fig:enter-label}
+\end{figure}
+
+\section{Wnioski} %PRZEANALIZOWAC JESZĆZE RAZ
+
+\begin{itemize}
+    \item \textbf{Czy warunek stopu jest właściwy?} \\
+    Warunek stopu polegający na porównaniu normy różnicy kolejnych przybliżeń $\|\vec{r}_{i+1} - \vec{r}_i\|_2 < \epsilon$ jest odpowiedni, ponieważ umożliwia zatrzymanie iteracji, gdy zmiany w kolejnych przybliżeniach stają się na tyle małe, że dalsze iteracje nie prowadzą do znaczącej poprawy wyniku. W przypadku $\epsilon = 10^{-2}$ warunek ten został spełniony po 36 iteracjach, co sugeruje, że minimum funkcji zostało przybliżone w rozsądnym czasie.
+
+    \item \textbf{Dlaczego uzyskane przybliżenie jest dalekie od dokładnego?} \\
+    Przybliżenie dla $\epsilon = 10^{-3}$ okazało się dalekie od dokładnego minimum, a liczba iteracji osiągnęła limit 1000. Powodem tego jest fakt, że gradient metody największego spadku może w niektórych przypadkach prowadzić do bardzo małych kroków, szczególnie gdy funkcja jest płaska w pobliżu minimum. Wówczas algorytm wykonuje wiele małych kroków, co skutkuje wolną konwergencją i koniecznością większej liczby iteracji.
+
+    \item \textbf{Jaki wpływ na rozwiązanie ma utrzymywanie stałej wartości h?} \\
+    Utrzymywanie stałej wartości kroku $h$ ma istotny wpływ na zachowanie algorytmu. Zbyt duża wartość $h$ może prowadzić do niestabilności i przeskakiwania przez minimum, podczas gdy zbyt mała wartość $h$ powoduje bardzo wolną konwergencję. W naszym przypadku stała wartość $h = 0.1$ pozwoliła na znalezienie przybliżonego minimum dla $\epsilon = 10^{-2}$ w rozsądnej liczbie iteracji, ale okazała się niewystarczająca dla $\epsilon = 10^{-3}$, co wymagało by bardziej adaptacyjnego podejścia do wyboru $h$ w zależności od iteracji.
+\end{itemize}
+
+\newpage
+\noindent
+Podsumowując, metoda największego spadku jest stosunkowo prosta do zaimplementowania i zrozumienia, co czyni ją atrakcyjną dla podstawowych zastosowań optymalizacyjnych. Jest skuteczna w wielu przypadkach, zwłaszcza gdy krajobraz funkcji ma dobrze zdefiniowane, strome nachylenia prowadzące do minimum. Jednak jej skuteczność może być ograniczona w przypadku bardziej złożonych funkcji, gdzie mogą występować liczne minima lokalne lub płaskie obszary. Ponadto, metoda ta nie zawsze gwarantuje znalezienie globalnego minimum, a jej działanie może być wrażliwe na wybór parametrów, takich jak stała wartość kroku $h$. W związku z tym, dla bardziej zaawansowanych problemów optymalizacyjnych, często stosuje się bardziej złożone algorytmy, takie jak na przykład metoda Newtona.
+
+
+\end{document}
