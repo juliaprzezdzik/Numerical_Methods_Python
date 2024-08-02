@@ -1,0 +1,271 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage{tabularx} 
+\usepackage{geometry} 
+\usepackage{siunitx} 
+\usepackage{caption}
+\usepackage{amsmath} 
+\usepackage{float}
+\usepackage{array} 
+\captionsetup[figure]{labelformat=empty} 
+\usepackage{placeins}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{fancyhdr,lastpage}
+\usepackage{fancyvrb}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{tikz}
+\pagestyle{fancy}
+\newgeometry{tmargin=2cm, bmargin=2cm, lmargin=2cm, rmargin=2cm}
+\Large %wielkosc czcionki
+
+\begin{document}
+\Large
+
+\title{\LARGE Sprawozdanie nr 8 z przedmiotu Metody Numeryczne\\
+       \LARGE Interpolacja funkcjami sklejanymi poprzez wyznaczenie wartości drugich pochodnych w węzłach.}
+\author{Julia Przeździk}
+\date{10 maja 2024 r.}
+\maketitle
+
+\rhead{\small{Interpolacja funkcjami sklejanymi}}
+\lhead{\small{Metody Numeryczne}}
+\cfoot{Strona \thepage\ z \pageref{LastPage}} 
+\large
+
+\section{Cel ćwiczenia}
+
+Zapoznanie się z terminem funkcji sklejanych oraz wykorzystanie ich do interpolacji poprzez wyznaczanie wartości drugich pochodnych w węzłach. Napisanie odpowiedniej funkcji rozwiązującej zadanie w wybranym języku programowania oraz wygenerowanie wykresów prezentujących dane zagadnienie.
+
+\section{Opis problemu}
+
+W celu przeprowadzenia interpolacji należy rozwiązać układ równań liniowych $Am = d$, którego generatorem jest wyrażenie:
+
+\begin{equation*}
+\mu_i m_{i-1} + 2m_i + \lambda_i m_{i+1} = d_i
+\end{equation*}
+
+\noindent
+gdzie $m_i$ jest wartością poszukiwaną drugich pochodnych w węzłach, które indeksowane są jako $i = 1,2,..,n$; $\lambda$ natomiast wyraża się zależnością:
+
+\begin{equation*}
+\lambda_i = \frac{h_{i+1}}{h_i + h_{i+1}},
+\end{equation*}
+
+\noindent
+A $\mu_i$:
+
+\begin{equation*}
+\mu_i = 1 - \lambda_i
+\end{equation*}
+
+\noindent
+$d_1, d_2,..., d_n$ to elementy wektora wyrazów wolnych, które wyrażone są zależnością:
+
+\begin{equation*}
+d_i = \frac{6}{h_i + h_{i+1}} \left( \frac{y_{i+1} - y_i}{h_{i+1}} - \frac{y_i - y_{i-1}}{h_i} \right)
+\end{equation*}
+
+\noindent
+Natomiast $h_i$ określa odległość pomiędzy jednym a drugim węzłem $x_i, x_{i+1}$. \\
+Warunki na drugie pochodne na brzegach zostały podane i wynoszą $m_1 = \alpha$ oraz $m_n =\beta$. Warunki brzegowe wprowadzone do układu równań przedstawiają się następująco:
+
+\textbf{\begin{equation*}
+\begin{bmatrix}
+1 & 0 & 0 & \cdots & \cdots & 0 \\
+\mu_2 & 2 & \lambda_2 & \cdots & \cdots & 0 \\
+0 & \mu_3 & 2 & \lambda_3 & \cdots & 0 \\
+\vdots & \ddots & \ddots & \ddots & \ddots & \vdots \\
+0 & \cdots & \cdots & \mu_{n-1} & 2 & \lambda_{n-1} \\
+0 & \cdots & \cdots & 0 & 0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+m_1 \\
+m_2 \\
+\vdots \\
+m_{n-1} \\
+m_n
+\end{bmatrix}
+=
+\begin{bmatrix}
+\alpha \\
+d_2 \\
+\vdots \\
+d_{n-1} \\
+\beta
+\end{bmatrix}
+\end{equation*}}
+
+\noindent
+Wartość funkcji interpolującej dla \( x \in [x_{i-1}, x_i] \) wyznacza się wg przepisu:
+
+\begin{equation}
+s_{i-1}(x) = m_{i-1} \frac{(x_i - x)^3}{6h_i} + m_i \frac{(x - x_{i-1})^3}{6h_i} + A_i (x - x_{i-1}) + B_i \tag{8}
+\end{equation}
+
+\noindent
+gdzie stałe całkowania mają postać:
+
+\begin{equation}
+A_i = \frac{y_i - y_{i-1}}{h_i} - \frac{h_i}{6} (m_i - m_{i-1}) \tag{9}
+\end{equation}
+
+\begin{equation}
+B_i = y_{i-1} - m_{i-1} \frac{h_i^2}{6} \tag{10}
+\end{equation}
+
+\noindent
+Zadanie polegało na napisaniu programu do interpolacji na podstawie wartości drugich pochodnych w węzłach i wartości funkcji w położeniu międzywęzłowym. Należało wykorzystać dwie funkcje:
+
+\begin{equation*}
+    f_1(x) = \frac{1}{1+x^2} \quad oraz \quad f_2(x) = cos(2x)
+\end{equation*}
+\noindent 
+Druga pochodna na obu krańcach przedziału miała wynosić 0, natomiast działanie należało wykonać dla $x \in [-5,5]$ oraz dla liczby węzłów n = 5, 8, 21. Należało wygenerować również wykresy funkcji interpolowanych $f(x)$ oraz interpolujących $s(x)$ dla każdego z przypadków. Dodatkowo, dla funkcji $f_1(x)$ i 10 węzłów oraz zadanego przedziały należało wyznaczyć wartości drugich pochodnych oraz porównać je z wartościami wyznaczonymi za pomocą wzoru:
+
+\begin{equation*}
+    \frac{d^2f}{dx^2} \approx \frac{f(x - \Delta x) - 2f(x) + f(x + \Delta x)}{(\Delta x)^2}
+\end{equation*} 
+
+\noindent
+Gdzie $\Delta x = 0.01$. Na podstawie otrzymanych wyników należało wygenerować wykres wartości drugich pochodnych w zależności od położenia węzłów interpolacyjnych porównujący metody obliczania drugich pochodnych funkcji.
+
+\section{Część teoretyczna}
+
+\subsection{Interpolacja funkcjami sklejanymi poprzez wyznaczenie wartości drugich pochodnych w węzłach}
+
+Drugą pochodną zapisano jako: 
+
+\begin{equation*}
+M_j = s^{(2)}(x_j), \quad j = 0, 1, \ldots, n
+\end{equation*}
+
+\noindent
+Znana jest zależność:
+
+\begin{equation*}
+s_{i-1}^{(2)}(x) = M_{i-1} \frac{x_i - x}{h_i} + M_i \frac{x - x_{i-1}}{h_i}
+\end{equation*}
+
+\noindent
+Po dwukrotnym scałkowaniu powyższego wyrażenia powstaje:
+
+\begin{equation*}
+s_{i-1}(x) = M_{i-1} \frac{(x_i - x)^3}{6h_i} + M_i \frac{(x - x_{i-1})^3}{6h_i} + A_i (x - x_{i-1}) + B_i
+\end{equation*}
+
+\noindent
+Stałe $A_i, B_i$ wyznaczane są z warunku interpolacji:
+
+\begin{equation*}
+B_i = y_{i-1} - M_{i-1} \frac{h_i^2}{6}
+\end{equation*}
+
+\begin{equation*}
+A_i = \frac{y_i - y_{i-1}}{h_i} - \frac{h_i}{6} (M_i - M_{i-1})
+\end{equation*}
+
+\noindent
+Ostatecznie po porównaniu równań dla każdego z węzłów oraz dodaniu do nich równań dla warunków z 1, a następnie z 2 pochodną powstaje następujący układ równań:
+
+
+\begin{equation*}
+\begin{bmatrix}
+2 & 1 & 0 & \cdots & 0 \\
+\mu_1 & 2 & \lambda_1 & \cdots & 0 \\
+0 & \mu_2 & 2 & \cdots & 0 \\
+\vdots & \ddots & \ddots & \ddots & \vdots \\
+0 & \cdots & 0 & 2 & \lambda_{n-1} \\
+0 & \cdots & 0 & 1 & 2
+\end{bmatrix}
+\begin{bmatrix}
+M_0 \\
+M_1 \\
+\vdots \\
+M_{n-1} \\
+M_n
+\end{bmatrix}
+=
+\begin{bmatrix}
+d_0 \\
+d_1 \\
+\vdots \\
+d_{n-1} \\
+d_n
+\end{bmatrix}
+\end{equation*}
+
+\noindent
+Po rozwiązaniu układu równań wyznacza się funkcję sklejaną wg wzoru:
+
+\begin{equation*}
+s_{i-1}(x) = M_{i-1} \frac{(x_i - x)^3}{6h_i} + M_i \frac{(x - x_{i-1})^3}{6h_i} + A_i (x - x_{i-1}) + B_i
+\end{equation*}
+
+\section{Wykorzystanie metody oraz otrzymane wyniki}
+Za pomocą języka Python oraz biblioteki NumPy zaimplementowano metodę interpolującą oraz generującą wykres dla każdego z przypadków. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-18 o 23.18.01.png}
+    \caption{\textbf{Rysunek nr 1: }Funkcja interpolowana $f_1(x)$ (linia prosta) oraz funkcja interpolująca (linia przerywana) dla \\ n = 5}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-18 o 23.20.09.png}
+    \caption{\textbf{Rysunek nr 2: }Funkcja interpolowana $f_2(x)$ (linia prosta) oraz funkcja interpolująca (linia przerywana) dla \\ n = 5}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-18 o 23.21.40.png}
+    \caption{\textbf{Rysunek nr 3: }Funkcja interpolowana $f_1(x)$ (linia prosta) oraz funkcja interpolująca (linia przerywana) dla \\ n = 8}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-18 o 23.23.37.png}
+    \caption{\textbf{Rysunek nr 4: }Funkcja interpolowana $f_2(x)$ (linia prosta) oraz funkcja interpolująca (linia przerywana) dla \\ n = 8}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-18 o 23.24.15.png}
+    \caption{\textbf{Rysunek nr 5: }Funkcja interpolowana $f_1(x)$ (linia prosta) oraz funkcja interpolująca (linia przerywana) dla \\ n = 21}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-18 o 23.25.10.png}
+    \caption{\textbf{Rysunek nr 6: }Funkcja interpolowana $f_2(x)$ (linia prosta) oraz funkcja interpolująca (linia przerywana) dla \\ n = 21}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-23 o 15.12.18.png}
+    \caption{\textbf{Rysunek nr 7: } Porównanie wartości drugiej pochodnej $f_1(x)$ dla n = 10 dwoma sposobami; linia przerywana przedstawia wartości drugiej pochodnej zgodnie z ilorazem różnicowym}
+    \label{fig:enter-label}
+\end{figure}
+
+\newpage
+\section{Wnioski}
+
+Po przenalizowaniu powyższych wykresów można dojść do wniosku, że zwiększanie liczby węzłów interpolacyjnych umożliwia lepsze oszacowanie kształtu funkcji. Jednakże, nie tylko liczba węzłów wpływa na końcowy wynik, ale także zmienność funkcji interpolowanej oraz założenia początkowe zadania. Zatem dla różnych kształtów funkcji można otrzymać dopasowania z różną dokładnością. W tym przypadku nieznacznie gorszy wynik powstaje dla funkcji $f_2(x)$ co można zauważyć, porównując na przykład wykresy z Rysunku nr 5 oraz z Rysunku nr 6. Wynika to z faktu, że funkcja $f_2(x)$ charakteryzuje się większą zmiennością niż funkcja $f_1(x)$ na zadanym przedziale, co można również zaobserwować na powyższych rysunkach. \\
+Wynika z tego, że aby uzyskać jak najlepsze oszacowanie przy pomocy interpolacji funkcjami sklejanymi poprzez wyznaczanie wartości drugich pochodnych, należy wykorzystać dużą liczbę węzłów (proporcjonalnie do danego przedziału) oraz warto również rozłożyć podane węzły nierównomiernie: mniej węzłów umieścić, gdzie funkcja jest najmniej zmienna, a więcej w miejscu dużej zmienności funkcji.\\
+Rysunek nr 7 natomiast ilustruje 2 sposoby wyznaczania wartości drugich pochodnych. Wniosek, jaki można wyciągnąć to fakt, że wykorzystanie ilorazu różnicowego znacznie poprawia efektywność danych wyjściowych. Punkty otrzymane za pomocą ilorazu różnicowego odpowiadają punktom, w których przechodziłby wykres zawierający analityczną wartość drugiej pochodnej. \\
+Podsumowując, podana metoda jest zdecydowanie skuteczna i daje satysfakcjonujące rezultaty, nawet dla stosunkowo małej liczby węzłów na danym przedziale. 
+
+\end{document}
+
