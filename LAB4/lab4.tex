@@ -1,0 +1,206 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage{tabularx} 
+\usepackage{geometry} 
+\usepackage{siunitx} 
+\usepackage{caption}
+\usepackage{amsmath} 
+\usepackage{float}
+\usepackage{array} 
+\captionsetup[figure]{labelformat=empty} 
+\usepackage{placeins}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{fancyhdr,lastpage}
+\usepackage{fancyvrb}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tikz}
+\pagestyle{fancy}
+\newgeometry{tmargin=2cm, bmargin=2cm, lmargin=2cm, rmargin=2cm}
+\Large %wielkosc czcionki
+
+\begin{document}
+\Large
+
+\title{\LARGE Sprawozdanie nr 5 z przedmiotu Metody Numeryczne\\
+       \LARGE Rozkład QR metodą Hauseholdera}
+\author{Julia Przeździk}
+\date{9 kwietnia 2024 r.}
+\maketitle
+
+\rhead{\small{Rozkład QR metodą Hauseholdera}}
+\lhead{\small{Metody Numeryczne}}
+\cfoot{Strona \thepage\ z \pageref{LastPage}} 
+\large
+
+\section{Cel ćwiczenia}
+Zapoznanie się z metodą bezpośrednią rozwiązywania problemu własnego, czyli rozkładem QR metodą Hauseholdera. Zaimplementowanie metody w wybranym języku programowania oraz \\ analiza otrzymanych danych.
+
+\section{Opis problemu}
+Należało wyznaczyć widmo wibracyjne acetylenu, czyli cząstki liniowej o dwóch atomach węgla oraz dwóch atomach wodoru. Układ po wychyleniu z położenia równowagi drga zgodnie z równaniami ruchu:
+
+\begin{equation}
+\begin{aligned}
+m_H \frac{d^2 x_1}{dt^2} &= -k_{CH} x_1 + k_{CH} x_2, \\
+m_C \frac{d^2 x_2}{dt^2} &= k_{CH} x_1 - (k_{CH} + k_{CC}) + k_{CH}x_2 + k_{CC} x_3, \\
+m_C \frac{d^2 x_3}{dt^2} &= k_{CC} x_2 - (k_{CH} + k_{CC}) + k_{CH}x_3 + k_{CH} x_4, \\
+m_H \frac{d^2 x_4}{dt^2} &= k_{CH} x_3 - k_{CH} x_4,
+\end{aligned}
+\end{equation}
+
+\noindent
+gdzie $m_H$ to masa wodoru, a $m_c$ to masa węgla, natomiast $k_{CH}$ to stała siłowa oddziaływania węgiel-wodór, a $k_{CC}$ to stała siłowa oddziaływania węgiel-węgiel; $x_i, i = 1, ... 4$ oznacza wychylenie atomu $i$ z położenia równowagi. Układ ten można zapisać w postaci macierzowej:
+
+\begin{equation}
+\begin{bmatrix}
+\frac{k_{CH}}{m_H} & -\frac{k_{CH}}{m_H} & 0 & 0 \\
+-\frac{k_{CH}}{m_C} & \frac{k_{CH} + k_{CC}}{m_C} & -\frac{k_{CC}}{m_C} & 0 \\
+0 & -\frac{k_{CC}}{m_C} & \frac{k_{CH} + k_{CC}}{m_C} & -\frac{k_{CH}}{m_C} \\
+0 & 0 & -\frac{k_{CH}}{m_H} & \frac{k_{CH}}{m_H} \\
+\end{bmatrix}
+\begin{bmatrix}
+A_1 \\
+A_2 \\
+A_3 \\
+A_4 \\
+\end{bmatrix}
+= \omega^2
+\begin{bmatrix}
+A_1 \\
+A_2 \\
+A_3 \\
+A_4 \\
+\end{bmatrix}.
+\end{equation}
+
+\noindent
+Jest to problem własny postaci $DA = \lambda A$, gdzie $A$ oznacza wektor własny, a $\lambda = \omega^2$ jest wartością własną macierzy współczynników D. \\
+Zadanie polegało na zdefiniowaniu macierzy $D$ przy przyjęciu odpowiednich wartości mas oraz stałych siłowych. Następnie należało znaleźć rozkkład $QR$ macierzy D, gdzie $Q$ jest macierzą ortogonalną, a $R$ macierzą trójkątną górną. Za pomocą rozkładu $QR$
+trzeba było po 200 iteracjach wyznaczyć wartości własne. 
+
+\section{Część teoretyczna}
+
+\subsection{Wyznaczanie wartości i wektorów własnych za pomocą rozkładu QR}
+Dla macierzy rzadkich rozkład QR uzyskuje się wykonując stosunkowo niewiele operacji w przeciwieństwie do macierzy gęstych. Rozkład ten wykonuje się maksymalnie $n-1$ razy i polega on na iteracyjnym przekształcaniu macierzy A:
+
+\begin{align*}
+A_0 &= A \\
+A_i &= Q_i R_i \quad &Q_i^{-1} \cdot / \\
+Q_i^{-1} A_i &= R_i \quad &/ \cdot Q_i \\
+Q_i^{-1} A_i Q_i &= R_i Q_i = A_{i+1} = Q_{i+1} R_{i+1} \\
+Q_i^{-1} A_i Q_i &= Q_{i+1} R_{i+1} \quad &Q_{i+1}^{-1} \cdot / \\
+Q_{i+1}^{-1} Q_i^{-1} A_i Q_i &= R_{i+1} \quad &/ \cdot Q_{i+1} \\
+Q_{i+1}^{-1} Q_i^{-1} A_i Q_i Q_{i+1} &= R_{i+1} Q_{i+1} = A_{i+2}
+\end{align*}
+
+\noindent
+Po cofnięciu się do $i=0$:
+
+\begin{equation*}
+A_{k+1} = Q_k^{-1} Q_{k-1}^{-1} \cdots Q_1^{-1} A Q_1 Q_2 \cdots Q_k
+\end{equation*}
+
+\noindent
+Po wprowadzeniu oznaczeń:
+
+\begin{equation*}
+P = P_k = Q_1 Q_2 \cdots Q_k
+\end{equation*}
+\begin{equation*}
+P^{-1} = P_k^{-1} = Q_k^{-1} Q_{k-1}^{-1} \cdots Q_1^{-1}
+\end{equation*}
+
+\noindent 
+Ostatecznie:
+
+\begin{equation*}
+P^{-1} A P = A_{k+1} = H
+\end{equation*}
+
+\noindent
+gdzie macierz H to macierz górnotrójkątna z wartościami własnymi na diagonali:
+
+\begin{equation*}
+\lambda_i = h_{ii}
+\end{equation*}
+
+\noindent
+Wektory własne można wyznaczyć przy pomocy wzorów:
+
+\begin{align*}
+x_j^{(i)} &= 0, \quad j = n, n - 1, \ldots, i + 1 \\
+x_i^{(i)} &= 1 \\
+x_j^{(i)} &= \frac{-1}{h_{jj} - h_{ii}} \sum_{k=j+1}^{i} h_{jk}  x_k^{(i)}, \quad \\
+j &= i - 1, i - 2, \ldots, 1 \\
+Hx &= \lambda x \\
+H &= P^{-1}AP \\
+P^{-1}APx &= Hx = \lambda x \\
+A(Px) &= \lambda Px \\
+y &= Px \\
+Ay &= \lambda y
+\end{align*}
+
+ \subsection{Algorytm rozkładu QR metodą Hauseholdera}
+W celu otrzymania rozkładu $QR$ macierzy $D$, należało zdefiniować macierze $R = D$ oraz $Q = I$, następnie dla wymiaru macierzy $n$ należało $n-1$ razy wykonać następujące operacje:
+\begin{itemize}
+    \item Znaleźć wektor $u = x - ||x||e$, gdzie $x$ to i-ty wektor kolumnowy macierzy R, w którym wszystkie elementy wektora o indeksie mniejszym niż i są wyzerowane, nastomiast $e$ to wektor złożony z samych zer poza i-tym elementem wynoszącym 1. 
+    \item Znaleźć wektor $v = \frac{u}{||u||}$
+    \item Znaleźć macierz $Q_t = I - 2vv^T$
+    \item Wykonać działania $Q = Q_TQ$ i $R = Q_TR$
+\end{itemize}
+Otrzymana macierz R to macierz górnotrójkątna, natomiast macierz Q wyznacza się za pomocą transponowania macierzy Q powstałej po wszysytkich iteracjach.
+
+\subsection{Algorytm wyznaczania wartości i wektorów własnych macierzy}
+Aby znaleźć wartości własne macierzy, należy przyjąć $H = D$ oraz $P = I$. Następnie, podczas 200 iteracji należy wykonać następujące działania:
+\begin{itemize}
+    \item Znaleźć rozkład $QR$ macierzy H
+    \item Przpisać do zmiennej $H$ odwrócony rozkład $QR$
+    \item Przypisać do zmiennej $P = PQ$
+\end{itemize}
+Otrzymana w ten sposób macierz $H$ posiada na diagonali wartości własne macierzy $D$. Wektory własne wyznacza się natomiast za pomocą operacji:
+
+\[
+x_i(j) = 
+\begin{cases} 
+0, & \text{dla } j > i \\
+1, & \text{dla } j = i \\
+\displaystyle \frac{-\sum_{k=j+1}^{i} H(j, k)x_i(k)}{H(j,j) - H(i,i)}, & \text{dla } j < i
+\end{cases}
+\]
+
+
+\noindent
+Powstałe wektory należy znormalizować. Wektor własny macierzy $D$ można obliczyć poprzez pomnożenia wektora przez macierz $P$.
+
+\section{Wykorzystanie metod oraz otrzymane wyniki}
+Omówiona metoda została napisana w postaci funkcji w języku Python. Otrzymane wartości własne wyniosły:
+
+\begin{equation*}
+ \omega_1^2 = 4.05324623 \times 10^{29} \quad
+ \omega_2^2 = 3.86229048 \times 10^{29} \quad
+ \omega_3^2 = 1.39491195 \times 10^{29} \quad
+  \omega_4^2 = -1.57818276 \times 10^{13} 
+\end{equation*}
+
+\noindent
+Natomiast wektory własne:
+
+\begin{equation*}
+A_1 = \begin{bmatrix} 0.7006 \\ -0.0959 \\ 0.0959 \\ -0.7005 \end{bmatrix}, \quad
+A_2 = \begin{bmatrix} 0.7046 \\ -0.0587 \\ -0.0587 \\ 0.7047 \end{bmatrix}, \quad
+A_3 = \begin{bmatrix} 0.0959 \\ 0.7006 \\ -0.7005 \\ -0.0959 \end{bmatrix}, \quad
+A_4 = \begin{bmatrix} 0.0587 \\ 0.7047 \\ 0.7047 \\ 0.0587 \end{bmatrix}
+\end{equation*}
+
+
+\section{Wnioski}
+
+Metoda rozkładu QR za pomocą transformacji Householdera okazała się skutecznym narzędziem do rozwiązywania problemów własnych, szczególnie przy analizie widma wibracyjnego acetylenu. Dzięki tej metodzie możliwe było dość dokładne obliczenie wartości i wektorów własnych, co jest kluczowe dla zrozumienia dynamiki molekularnej. Rozkład QR ponadto zapewnia dobrą stabilność numeryczną, zwłaszcza dla macierzy rzadkich. Algorytm Householdera, poprzez iteracyjne przekształcania, pozwala na dokładne oszacowania wartości własnych.
+\noindent
+Metoda ta jednak jest obliczeniowo kosztowna dla macierzy o wysokiej złożoności, co wymaga optymalizacji algorytmicznych i sprzętowych. Ograniczeniem może być mniejsza efektywność dla macierzy o wysokiej gęstości wartości niezerowych.
+
+\end{document}
