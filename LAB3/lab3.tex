@@ -1,0 +1,192 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage{tabularx} 
+\usepackage{geometry} 
+\usepackage{siunitx} 
+\usepackage{caption}
+\usepackage{amsmath} 
+\usepackage{float}
+\usepackage{array} 
+\captionsetup[figure]{labelformat=empty} 
+\usepackage{placeins}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{fancyhdr,lastpage}
+\usepackage{fancyvrb}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\pagestyle{fancy}
+
+\newgeometry{tmargin=2cm, bmargin=2cm, lmargin=2cm, rmargin=2cm}
+\Large %wielkosc czcionki
+
+
+\begin{document}
+\Large
+
+
+%Sprawozdanie nr 4 z przedmiotu Metody Numeryczne}}
+
+%Wyznaczanie wartości i wektorów własnych macierzy metodą bisekcji
+
+\title{\LARGE Sprawozdanie nr 4 z przedmiotu Metody Numeryczne\\
+       \LARGE Wyznaczanie wartości i wektorów własnych macierzy metodą bisekcji}
+\author{Julia Przeździk}
+\date{8 kwietnia 2024 r.}
+\maketitle
+
+\rhead{\small{Metoda Bisekcji}}
+\lhead{\small{Metody Numeryczne}}
+\cfoot{Strona \thepage\ z \pageref{LastPage}} 
+\large
+
+
+
+\section{Cel ćwiczenia}
+Zapoznanie się oraz wykorzystanie metody bisekcji w celu znalezienia wektorów własnych i stowarzyszonych z nimi wartości własnych macierzy. Zaimplementowanie metody w wybranym języku programowania.
+
+\section{Opis problemu}
+Należało znaleźć wektory i wartości własne macierzy Hamiltona dla jednowymiarowego oscylatora harmonicznego. Równanie własne operatora energii można zapisać w następujący sposób:
+
+\begin{equation}
+\left( -\frac{\hbar^2}{2m} \frac{\partial^2}{\partial x^2} + \frac{kx^2}{2} \right) \psi(x) = E\psi(x),
+\end{equation}
+
+\noindent
+gdzie \(\psi(x)\) jest funkcją stanu elektronu o energii \(E\), \(\frac{kx^2}{2}\) to potencjał oscylatora harmonicznego, \(m\) jest masą elektronu, \(\hbar\) to stała Plancka podzielona przez \(2\pi\). Po odpowiedniej zamianie jednostek pochodną można zastąpić poniższym ilorazem różnicowym: 
+
+\begin{equation}
+\frac{\partial^2}{\partial x^2} \psi(x = x_i) \approx \frac{\psi(x_{i+1}) - 2\psi(x_i) + \psi(x_{i-1})}{(\Delta x)^2},
+\end{equation}
+\noindent
+gdzie $x_i$ oznacza współrzędna $x$ w i-tym węźle siatki obliczeniowej. Po przybliżeniu różniczki za pomocą równania (2) i przy zastosowaniu notacji $\psi(x_i) \equiv \psi_i$ powstaje równanie: 
+
+\begin{equation}
+-\frac{1}{2} \frac{\psi_{i+1} - 2\psi_i + \psi_{i-1}}{(\Delta x)^2} + \frac{1}{2} x_i^2\psi_i = E\psi_i,
+\end{equation}
+
+\noindent
+które w postaci rzeczywistej macierzy trójprzekątniowej przedstawia się następująco:
+
+\begin{equation*}
+\begin{bmatrix}
+h_{1,1} & h_{1,2} & 0 & \cdots & 0 \\
+h_{2,1} & h_{2,2} & h_{2,3} & \cdots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 & \cdots & h_{N-3,N-4} \\
+0 & 0 & 0 & \cdots & h_{N-2,N-3} \\
+0 & 0 & 0 & \cdots & h_{N-1,N-2}
+\end{bmatrix}
+\begin{bmatrix}
+\psi_{1} \\
+\psi_{2} \\
+\vdots \\
+\psi_{N-2} \\
+\psi_{N-1} \\
+\psi_{N-1}
+\end{bmatrix}
+= E
+\begin{bmatrix}
+\psi_{1} \\
+\psi_{2} \\
+\vdots \\
+\psi_{N-2} \\
+\psi_{N-1} \\
+\psi_{N-1}
+\end{bmatrix}
+\end{equation*}
+\noindent
+Zadanie polegało na znalezieniu pięciu pierwszych wartości własnych oraz wektorów własnych powyższej macierzy oraz naniesieniu na wykres wektorów własnych w przedziale $x \in [-L,L]$. Metodę bisekcji należało wykorzystać dla {IT\_MAX = 50} iteracji oraz przyjąć $N = 50$ oraz $L = 5$. Następnie trzeba było porównać wyniki metody z wynikami analitycznymi.
+
+\newpage
+\section{Część teoretyczna}
+
+\subsection{Macierz tójdiagonalna symetryczna i nieredukowalna}
+Macierz wykorzystywana w metodzie bisekcji to macierz trójdiagonalna symetryczna i nieredukowalna, która wygląda następująco:
+
+\begin{equation}
+H = \begin{bmatrix}
+\delta_1 & \gamma_1 & 0 & \cdots & 0 \\
+\gamma_1 & \delta_2 & \gamma_2 & \cdots & 0 \\
+0 & \gamma_2 & \delta_3 & \ddots & \vdots \\
+\vdots & \vdots & \ddots & \ddots & \gamma_{N-1} \\
+0 & 0 & \cdots & \gamma_{N-1} & \delta_N
+\end{bmatrix},
+\end{equation}
+
+\noindent
+gdzie $\gamma_i, i = 1:N-1$ są różne od 0. Dla tak zdefiniowanej macierzy pewne jest, że wszystkie wartości są rzeczywiste i pojedyncze. 
+
+\subsection{Metoda bisekcji}
+Ta metoda numeryczna polega na wykorzystaniu wielomianu charakterystycznego macierzy $W(\lambda)$ oraz założeniu dowolnej wartości $\lambda$, a następnie określeniu liczby wartości własnych macierzy mniejszych niż ta wartość. $W(\lambda)$ można obliczyć poprzez rozwinięcie wyznacznika względem względem kolejnych kolumn macierzy:
+
+\begin{equation}
+\omega_i(\lambda) = \det(J_i - \lambda I)
+\end{equation}
+
+\noindent
+Wartości $\omega_i(\lambda)$ oblicza się sposobem iteracyjnym:
+
+\begin{equation}
+\begin{aligned}
+\omega_0(\lambda) &= 1 \\
+\omega_1(\lambda) &= \delta_1 - \lambda \\
+\omega_i(\lambda) &= (\delta_i - \lambda)\omega_{i-1}(\lambda) - |\gamma_i|^2\omega_{i-2}(\lambda) \\
+i &= 2,3,\ldots,n \\
+W(\lambda) &= \omega_n(\lambda)
+\end{aligned}
+\end{equation}
+
+\subsection{Algorytm wyznaczania wartości własnych}
+Algorytm wykonuje $IT\_MAX$ iteracji, a liczba wykonań określa dokładność przybliżenia $\lambda_i$ przez $\lambda_j$, które jest przybliżeniem wartości własnej w j-tej iteracji. Na początku należy przyjąć przedział $[a,b]$, w którym według przewidywań może znajdować się $\lambda_i$, natomiast $\lambda_j$ przyjmuje wartość $\frac{a+b}{2}$. Następnie wyznacza się liczbę n zmian znaku w ciągu $\omega_i(\lambda)$. Dla $n \leq i$ przedział kolejnej iteracji to $[\lambda_j, b]$ a $\lambda_j = \frac{a+\lambda_j}{2}$ , natomiast dla $n > i$ to $[a, \lambda_1]$ oraz $\lambda_j = \frac{b+j}{2}$. Wyznaczanie liczby n należy powtórzyć $IT\_MAX$ razy. Wektor własny $x_i$ otrzymuje się rekurencyjnie:
+
+\begin{equation}
+\begin{aligned}
+x_i^1 &= 1 \\
+x_i^2 &= \frac{\lambda_i - \delta_1}{\gamma_1} \\
+x_i^n &= \frac{(\lambda_i - \delta_n)x_i^{n-1} - |\gamma_n|^2 x_i^{n-2}}{\gamma_{n-1}},
+\end{aligned}
+\end{equation}
+$x_i^n$ jest n-tą współrzędną i-tego wektora własnego. Wektor należy na koniec unormować,\\ tzn. $ x_i = \frac{\mathbf{x}_i}{||\mathbf{x}_i||}$ Długość wektora obliczana jest z normy Euklidesowej.
+
+
+\section{Wykorzystanie metod i otrzymane wyniki}
+Metodę bisekcji zaimplementowano w języku Python i otrzymano następujące wartości własne: 0.508899194, 1.52407427, 2.5339821, 3.5385825, 4.5378456. W tabeli nr 1 zaprezentowano 10 pierwszych wektorów własnych dla każdej z podanych wartości. \\
+
+\begin{tabular}{lrrrrr}
+\toprule
+{} &  $x_{1}$ dla $\lambda_{1} \approx 0.51$ &  $x_{2}$ dla $\lambda_{2} \approx 1.52$ &  $x_{3}$ dla $\lambda_{3} \approx 2.53$ &  $x_{4}$ dla $\lambda_{4} \approx 3.54$ &  $x_{5}$ dla $\lambda_{5} \approx 4.54$ \\
+\midrule
+0 &                                0.000010 &                                0.000059 &                                0.000245 &                                0.000811 &                                0.002252 \\
+1 &                                0.000028 &                                0.000165 &                                0.000666 &                                0.002139 &                                0.005759 \\
+2 &                                0.000067 &                                0.000378 &                                0.001466 &                                0.004508 &                                0.011609 \\
+3 &                                0.000150 &                                0.000809 &                                0.002994 &                                0.008757 &                                0.021373 \\
+4 &                                0.000322 &                                0.001654 &                                0.005812 &                                0.016074 &                                0.036918 \\
+5 &                                0.000665 &                                0.003241 &                                0.010766 &                                0.028006 &                                0.060111 \\
+6 &                                0.001319 &                                0.006086 &                                0.019031 &                                0.046299 &                                0.092150 \\
+7 &                                0.002519 &                                0.010949 &                                0.032069 &                                0.072485 &                                0.132532 \\
+8 &                                0.004624 &                                0.018860 &                                0.051443 &                                0.107163 &                                0.177847 \\
+9 &                                0.008160 &                                0.031077 &                                0.078406 &                                0.149040 &                                0.220894 \\
+\bottomrule
+\end{tabular}
+
+
+\subsubsection{Graficzne przedstawienie wyników}
+Na rysunku nr 1 przedstawiono wykresy kolejnych wektorów własnych oscylatora harmonicznego. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-04-11 o 13.32.54.png}
+    \caption*{\textbf{Rysunek nr 1:} Wykres kolejnych wektorów własnych oscylatora harmonicznego.}
+    \label{fig:enter-label}
+\end{figure}
+
+\newpage
+\section{Wnioski}
+Metoda bisekcji umożliwiła stosunkowo szybkie i wygodne znalezienie wartości oraz wektorów własnych macierzy Hamiltona dla jednowymiarowego oscylatora harmonicznego. Dane zawarte w rozdziale 4 nie odbiegają zbytnio od wartości otrzymanych analitycznie, zatem metodę można uznać za jak najbardziej skuteczną w kontekście podanego problemu. Zgodność otrzymanych wyników z oczekiwaniami teoretycznymi podkreśla dokładność tej metody oraz poprawność zaimplementowanego algorytmu. Wizualizacja wektorów własnych dostarcza dodatkowo wglądu w kształt funkcji stanu. Wyniki uzyskane dzięki skutecznemu wykorzystaniu języka Python, potwierdzają jego przydatność w obliczeniach naukowych. Ponadto, warto zwrócić uwagę na fakt, że normalizacja wektorów własnych jest kluczowa dla ich dalszej analizy i interpretacji. Ćwiczenie podkreśliło, jak ważne jest dokładne dobranie parametrów początkowych metody, takich jak przedział bisekcji i liczba iteracji dla zapewnienia jej efektywności. Metoda bisekcji umożliwiła osiągnięcie wiarygodnych rezultatów w sytuacji, gdy bezpośrednie rozwiązania analityczne są niedostępne.
+
+\end{document}
