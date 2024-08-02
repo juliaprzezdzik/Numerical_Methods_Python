@@ -1,0 +1,188 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage{tabularx} 
+\usepackage{geometry} 
+\usepackage{siunitx} 
+\usepackage{caption}
+\usepackage{amsmath} 
+\usepackage{float}
+\usepackage{array} 
+\captionsetup[figure]{labelformat=empty} 
+\usepackage{placeins}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{fancyhdr,lastpage}
+\usepackage{fancyvrb}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{tikz}
+\pagestyle{fancy}
+\newgeometry{tmargin=2cm, bmargin=2cm, lmargin=2cm, rmargin=2cm}
+\Large %wielkosc czcionki
+
+\begin{document}
+\Large
+
+\title{\LARGE Sprawozdanie nr 6 z przedmiotu Metody Numeryczne\\
+       \LARGE Wyznaczanie pierwiastków równania nieliniowego metodą Netwona}
+\author{Julia Przeździk}
+\date{17 kwietnia 2024 r.}
+\maketitle
+
+\rhead{\small{Metoda Newtona}}
+\lhead{\small{Metody Numeryczne}}
+\cfoot{Strona \thepage\ z \pageref{LastPage}} 
+\large
+
+\section{Cel ćwiczenia}
+Celem zadania było zapoznanie się z nową metodą wyznaczania pierwiastków równania nieliniowego - metodą Newtona. Zastosowanie metody oraz zaimplementowanie jej w wybranym języku programowania. Na podstawie otrzymanych wyników ocena oraz wyciągnięcie wniosków.
+
+\section{Opis problemu}
+Problem polegał na wyznaczeniu wszystkich pierwiastków równania nieliniowego:
+
+\begin{equation*}
+f(x) = \ln(x) \cdot (x - 2)^2
+\end{equation*}
+
+\noindent
+Zatem w celu znalezienia zera rzeczywistego należało znaleźć rozwiązanie równania:
+\begin{equation*}
+    f(x) = 0 \iff x \in \{x_1, x_2, \ldots, x_k\}, \quad x \in \mathbb{R}
+\end{equation*}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Zrzut ekranu 2024-04-18 o 11.43.44.png}
+    \caption{\textbf{Rysunek nr 1:} Wykres funkcji $y = ln(x)(x-2)^2$ \\ \small{Źrodło: wolframalpha.com}}
+    \label{fig:enter-label}
+\end{figure}
+
+\noindent
+Natomiast podczas poszukiwania pierwiastków wielokrotnych równania nieliniowego: liczba $\alpha$ jest $r$-krotnym rozwiązaniem równania (dla $r \geq 2 $), gdy jest $r-1$-krotnym pierwiastkiem równania:
+\begin{equation*}
+    f'(x) = 0
+\end{equation*}
+Metoda Newtona umożliwia znalezienie pierwiastków zarówno o parzystej, jak i o nieparzystej krotności.
+
+\section{Część teoretyczna}
+
+\subsection{Metoda Newtona-Raphsona}
+Metoda Newtona-Raphsona, nazywana również metodą Newtona lub metodą stycznych polega na wyznaczeniu przedziału $[a,b]$, z którego końca należy poprowadzić styczną do wykresu funkcji $y=f(x)$. Funkcja ma w tym miejscu mieć ten sam znak, co druga pochodna. Dzięki temu następuje zbliżanie się do pierwiastka z jednej strony, zatem wykonuje się jedną iterację mniej. Otrzymana styczna przecina oś $O_x$ w punkcie $x_1$, który jest pierwszym przybliżeniem rozwiązania. Następnie należy sprawdzić, czy $f(x_1)=0$; jeśli nie, to z tego punktu należy poprowadzić kolejną styczną. Analogicznie, druga styczna przecina oś $O_x$ w miejscu drugiego przybliżenia. Warunkiem zakończenia procesu iteracyjnego jest:
+\begin{equation*}
+    \epsilon_{x+1} = |x_{i+1} - x_i| < 10^{-6}
+\end{equation*}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Zrzut ekranu 2024-04-18 o 12.24.35.png}
+    \caption{\textbf{Rysunek nr 1:} Wykres funkcji oraz rysowanie kolejnych stycznych}
+    \label{fig:enter-label}
+\end{figure}
+\noindent
+\subsection{Wzór iteracyjny w metodzie Newtona-Raphsona}
+Równanie stycznej poprowadzonej z punktu b przedstawia się następująco:
+\begin{equation*}
+    y - f(b) = f'(b)(x-b)
+\end{equation*}
+\noindent
+Dla $y=0$ powstaje pierwsze przybliżenie:
+\begin{equation*}
+    x_1 = b - \frac{f(b)}{f'(b)}
+\end{equation*}
+\noindent
+W $k$-tym przybliżeniu równanie stycznej opisuje zależność:
+\begin{equation*}
+    y - f(x_k) = f'(x_k)(x-x_k)
+\end{equation*}
+\noindent
+Wzór iteracyjny na położenie $k$-tego przybliżenia pierwiastka równania nieliniowego w metodzie Newtona:
+\begin{equation*}
+    x_{k+1} = x_k - \frac{f(x_k}{f'(x_k)} \quad (k=1,2,3...)
+\end{equation*}
+Dla pierwiastka wielokrotnego stosuje się zmodyfikowaną metodę Newtona, gdzie należy uwzględnić znajomość krotności pierwiastka lub zastąpieniem funkcji $f(x)$ wyrażeniem $u(x) = \frac{f(x)}{f'(x)}$. Metoda Newtona jest metodą jednopunktową, co znaczy, że wykorzystuje tylko informacje o wartości
+funkcji w jednym punkcie dla każdej iteracji obliczeń.
+\subsection{Szacowanie rzędu metody Newtona}
+Należy skorzystać z rozwinięcia Taylora w miejscu ostatniego przybliżenia $x_k$:
+\begin{equation*}
+f(a) = f(x_k) + f'(x_k)(a - x_k) + \frac{1}{2}f''(\xi)(a - x_k)^2, \quad \xi \in [a, x_k]
+\end{equation*}
+Wiedząc, że $f(a)=0$, po przekształceniu wzora Taylora powstaje:
+\begin{equation*}
+a = x_k - \frac{f(x_k)}{f'(x_k)} - \frac{1}{2} \frac{f''(\xi)}{f'(x_k)} (a - x_k)^2
+\end{equation*}
+\begin{equation*}
+    x_{k+1} = a
+\end{equation*}
+\begin{equation*}
+\epsilon_{k+1} = -\frac{f''(\xi)}{2f'(x_k)} \epsilon_k^2, \quad \text{gdzie } \epsilon_k = a - x_k
+\end{equation*}
+\begin{equation*}
+\frac{\epsilon_{k+1}}{\epsilon_k^2} = -\frac{f''(\xi)}{2f'(x_k)} \approx C, \quad \text{zatem } p = 2
+\end{equation*}
+\noindent
+Rząd metody Newtona-Raphsona wynosi p=2.
+
+\section{Wykorzystanie metody oraz otrzymane wyniki}
+Na początku sporządzono wykres funkcji $f(x)$ w zakresie $x \in [0.5, 2.4]$. Następnie na podstawie wykresu oraz postaci równania określono krotność pierwiastków i oszacowano ich przedziały izolacji. Następnie stworzono program do wyznaczania pierwiastków równania nieliniowego na bazie niemodyfikowalnej metody Newtona. Do każdego pierwiastka stworzono tabelę z informacjami o położeniu kolejnych przybliżeń, wartościami $\epsilon_i$ oraz wartościami funkcji i jej pierwszej pochodnej. Obliczeia powtórzono dla pierwiastka wielokrotnego.
+\newpage
+\noindent
+Wykres funkcji $f(x)$ w zadanym przedziale: 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Zrzut ekranu 2024-04-18 o 13.12.47.png}
+    \caption{\textbf{Rysunek nr 3:} Wykres $f(x)$ dla $x \in [0.5, 2.4]$}
+    \label{fig:enter-label}
+\end{figure}
+\noindent
+Utworzono funkcję w języku Python i przy jej użyciu zgromadzono następujące dane:
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Nr iteracji &Wartość $\epsilon_i$ & \( f(x) \) & \( f'(x) \) & Wartość przybliżenia  \\ \hline
+1 & 0.04616161363467519 & 0.001930040236477637 & -0.05532776516414345 & 1.946161613634675\\
+2 & 0.026170742855612383 & 0.000519939424296973 & -0.028055761919300804 & 1.9723323564902875\\
+3 & 0.01383416090548062 & 0.00013131605456374393 & -0.013929831646110068 &  1.986166517395768\\
+4 &0.007018795242083931 & 3.203122288857069e-05 & -0.006837986733034035 &  1.993185312637852 \\
+5 &0.003483099857666483 & 7.67506515637641e-06 & -0.0033371465022752835 & 1.996668412495518 \\
+6 & 0.0017090140663478248 & 1.82274269279486e-06 & -0.0016238908792371952 & 1.9983774265618663 \\
+7 &0.0008338142843491436 & 4.309898738170331e-07 & -0.0007890703470141066 & 1.9992112408462155\\
+8 & 0.0004056811842301222 & 1.0169035818044983e-07 & -0.0003831513579765135 & 1.9996169220304456 \\
+9& 0.0001971107029536956 & 2.3968464390596693e-08 & -0.00018598456012083287 & 1.9998140327333993\\
+10 & 9.570799572200528e-05 & 5.646519407472027e-09 & -9.026334443051747e-05 & 1.9999097407291213\\
+11 &4.6456510930603656e-05 & 1.329886843315007e-09 & -4.380371930998702e-05 & 1.999956197240052\\
+12 & 2.2546396561073934e-05 & 3.1318195706049266e-10 & -2.125658930590553e-05 & 1.999978743636613\\
+13 & 1.0941447309287256e-05 & 7.374857402819637e-11 & -1.0314969276746163e-05 & 1.9999896850839223\\
+\hline
+\end{tabular}
+\caption*{\textbf{Tabela nr 1:} Wartości kolejnych przybliżeń wraz z odpowiadającymi im wartościami $f(x)$,  $f'(x)$ oraz  $\epsilon $ dla danej iteracji}
+\label{tab:my_label}
+\end{table}
+\newpage
+\noindent
+Następnie zastosowano zmodyfikowaną metodę Newtona i otrzymano następujące dane:
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Nr iteracji & Wartość \( e_i \) & \( f(x) \) & \( f'(x) \) & Wartość przybliżenia \\ \hline
+1 & 0.4202249939298719 & 0.0002793745391526249 & -0.020431608508907066 & 1.979775006070128 \\
+2 & 0.013673643904777766 & 2.9609183356543013e-05 & -0.006572880645986728 & 1.9934486499749058 \\
+3 & 0.00450474988841032 & 2.8990085945353843e-06 & -0.0020486965680219646 & 1.997953399863316 \\
+4 & 0.0014150502518459618 & 2.763394284822603e-07 & -0.0006317493754605935 & 1.999368450115162 \\
+5 & 0.00043741939322194945 & 2.6118735408764404e-08 & -0.00019414933676908168 & 1.999805869508384 \\
+6 & 0.00013452909931821466 & 2.4621788628964364e-09 & -5.9603168513684443e-05 & 1.9999403986077022 \\
+7 & 4.1309529749788965e-05 & 2.3191860448462975e-10 & -1.8292029845628925e-05 & 1.999981708137452 \\
+8 & 1.2678669696120082e-05 & 2.1839547181771895e-11 & -5.613208605872227e-06 & 1.9999943868071481 \\ \hline
+\end{tabular}
+\caption*{\textbf{Tabela nr 2:} Wartości kolejnych przybliżeń wraz z odpowiadającymi im wartościami $f(x)$,  $f'(x)$ oraz  $\epsilon $ dla danej iteracji}
+\label{tab:newton_approximations}
+\end{table}
+
+\section{Wnioski}
+Wykorzystana metoda numeryczna zdecydowanie sprawdziła się do wyznaczenia pierwiastków równania nieliniowego. Umożliwiła szybkie odnalezienie poszukiwanych wartości, które po porównaniu z wartościami analitycznymi okazały się być słuszne i nie odbiegające zbytnio od oczekiwań. Metoda Newtona jest metodą stabilną oraz wymagającą stosunkowo małej ilości iteracji, aby dotrzeć do oczekiwanego wyniku (w porównaniu na przykład do metody siecznych). Zauważalny jest też fakt, że zmodyfikowana metoda Newtona potrzebowała mniejszej liczby iteracji do osiągnięcia oczekiwanego wyniku. Wadą metody Newtona może być natomiast fakt, że jej działanie jest mocno zależne od wyboru wartości początkowej. Jednakże, w przypadku odpowiedniego jej dobrania można szybko uzyskać oczekiwany wynik. 
+
+\end{document}
