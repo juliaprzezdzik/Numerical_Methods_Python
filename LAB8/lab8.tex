@@ -1,0 +1,212 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage{tabularx} 
+\usepackage{geometry} 
+\usepackage{siunitx} 
+\usepackage{caption}
+\usepackage{amsmath} 
+\usepackage{float}
+\usepackage{array} 
+\captionsetup[figure]{labelformat=empty} 
+\usepackage{placeins}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{fancyhdr,lastpage}
+\usepackage{fancyvrb}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{tikz}
+\pagestyle{fancy}
+\newgeometry{tmargin=2cm, bmargin=2cm, lmargin=2cm, rmargin=2cm}
+\Large %wielkosc czcionki
+
+\begin{document}
+\Large
+
+\title{\LARGE Sprawozdanie nr 9 z przedmiotu Metody Numeryczne\\
+       \LARGE Aproksymacja funkcji okresowych}
+\author{Julia Przeździk}
+\date{18 maja 2024 r.}
+\maketitle
+
+\rhead{\small{Aproksymacja funkcji okresowych}}
+\lhead{\small{Metody Numeryczne}}
+\cfoot{Strona \thepage\ z \pageref{LastPage}} 
+\large
+
+\section{Cel ćwiczenia}
+
+Zadanie polegało na aproksymacji trzech funkcji okresowych $f_1, f_2, f_3$, czyli wyznaczeniu współczynników kombinacji liniowej za pomocą odpowiednich wzorów i z uwzględnieniem określonego przedziału aproksymacji. Należało napisać program przeprowadzający tę operację w wybranym języku programowania, a następnie narysować wykresy odpowiednich funkcji.
+
+\section{Opis problemu}
+Zdefiniowano 3 funkcje: 
+
+\begin{equation*}
+\begin{aligned}
+f_1(x) &= 2\sin(x) + \sin(2x) + 2\sin(3x) + \alpha \\
+f_2(x) &= 2\sin(x) + \sin(2x) + 2\cos(x) + \cos(2x) \\
+f_3(x) &= 2\sin(1.1x) + \sin(2.1x) + 2\sin(3.1x)
+\end{aligned}
+\end{equation*}
+
+\noindent
+gdzie $\alpha = \frac{\text{rand()}}{\text{RAND\_MAX} + 1.0} - 0.5$. Zadanie polegało na aproksymacji $f_1, f_2, f_3$ za pomoca funkcji $F(x)$:
+
+\begin{equation*}
+F(x) = \sum_{k=0}^{M_s} a_k \sin(kx) + \sum_{j=0}^{M_c} b_j \cos(jx)
+\end{equation*}
+
+\noindent
+Należało przyjąć liczbę węzłów $2n = 100$ oraz przedział aproksymacji $x \in [0, 2\pi)$, a także:
+\begin{itemize}
+    \item dla $f_1$: $\alpha = 0$, $(M_s, M_c) = {(5,5)}$
+    \item dla $f_2$: $(M_s, M_c) = {(5,5)}$
+    \item dla $f_2$: $(M_s, M_c) = {(5,0),(5,5), (10, 10)}$
+    \item ponownie dla $f_1$, dla każdego węzła należało obliczyć wartość $\alpha$ z podanego powyżej wzoru,; $(M_s, M_c) = {(5,5),(30,30)}$
+\end{itemize}
+
+\noindent
+Dla powyższych funkcji należało wyznaczyć współczynniki $a_k$ oraz $b_j$, a także narysować wykresy $f_i(x)$ i $F_i(x)$ na jednym rysunku.
+
+\section{Część teoretyczna}
+
+\subsection{Aproksymacja funkcji trygonometrycznych}
+
+ Funkcje okresowe aproksymuje się przy użyciu funkcji trygonometrycznych, czyli w bazie
+    \[
+    1, \sin(x), \cos(x), \sin(2x), \cos(2x), \ldots
+    \]
+\noindent
+Wielomian trygonometryczny o okresie \(2\pi\) ma postać:
+    \[
+    Q_m(x) = \frac{a_0}{2} + \sum_{j=1}^m \left[ a_j \cos(jx) + b_j \sin(jx) \right]
+    \]
+
+\noindent
+Jeśli funkcja \(f(x)\) jest określona na dyskretnym zbiorze równoodległych punktów, a liczba punktów jest parzysta i wynosi \(2n\):
+    \[
+    x_i = \frac{\pi i}{n}, \quad i = 0, 1, 2, \ldots, 2n-1
+    \]
+
+    \begin{equation*}
+    \sum_{i=0}^{2N-1} \sin(mx_i) \sin(kx_i) =
+    \begin{cases} 
+    0, & m \neq k \\
+    N, & m = k \neq 0 \\
+    0, & m = k = 0 
+    \end{cases}
+    \end{equation*}
+
+    \begin{equation*}
+    \sum_{i=0}^{2N-1} \cos(mx_i) \cos(kx_i) =
+    \begin{cases} 
+    0, & m \neq k \\
+    N, & m = k \neq 0 \\
+    2N, & m = k = 0 
+    \end{cases}
+    \end{equation*}
+
+    \[
+    \sum_{i=0}^{2N-1} \cos(mx_i) \sin(kx_i) = 0, \quad \text{m, k - dowolne}
+    \]
+
+\noindent
+Poszukiwany wielomian jest postaci:
+\[
+F(x) = \frac{1}{2} a_0 + \sum_{j=1}^{m} \left[ a_j \cos(jx) + b_j \sin(jx) \right], \quad m < N
+\]
+
+\noindent
+Współczynniki \(a_j\) oraz \(b_j\) wyznacza się z warunku minimalizacji wyrażenia:
+\[
+\sum_{i=0}^{2N-1} \left[ f(x_i) - F(x_i) \right]^2 = \min
+\]
+\noindent
+co prowadzi do zależności na współczynniki:
+\[
+a_0 = \frac{1}{2N} \sum_{i=0}^{2N-1} f(x_i)
+\]
+
+\[
+a_{j>0} = \frac{1}{N} \sum_{i=0}^{2N-1} f(x_i) \cos(jx_i) = \frac{1}{N} \sum_{i=0}^{2N-1} f(x_i) \cos\left( \frac{\pi i j}{N} \right)
+\]
+
+\[
+b_j = \frac{1}{N} \sum_{i=0}^{2N-1} f(x_i) \sin(jx_i) = \frac{1}{N} \sum_{i=0}^{2N-1} f(x_i) \sin\left( \frac{\pi i j}{N} \right)
+\]
+
+\section{Wykorzystanie metody oraz otrzymane wyniki}
+Przy pomocy języką Python oraz biblioteki NumPy stworzono funkcje oraz wygenerowano poniższe wykresy:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-18 o 23.48.52.png}
+    \caption{\textbf{Rysunek nr 1: }Aproksymacja funkcji $f1(x)$}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-18 o 23.49.28.png}
+    \caption{\textbf{Rysunek nr 2: }Aproksymacja funkcji $f2(x)$}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-18 o 23.50.01.png}
+    \caption{\textbf{Rysunek nr 3: }Aproksymacja funkcji $f3(x)$}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-18 o 23.50.39.png}
+    \caption{\textbf{Rysunek nr 4: }Aproksymacja funkcji $f3(x)$}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-18 o 23.52.27.png}
+    \caption{\textbf{Rysunek nr 5: }Aproksymacja funkcji $f3(x)$}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Zrzut ekranu 2024-05-18 o 23.53.14.png}
+    \caption{\textbf{Rysunek nr 6: }Aproksymacja funkcji $f1(x)$}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Zrzut ekranu 2024-05-23 o 15.55.44.png}
+    \caption{\textbf{Rysunek nr 7} :Współczynniki dla Ms = Mc = 5}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Zrzut ekranu 2024-05-23 o 15.56.16.png}
+    \caption{\textbf{Rysunek nr 8} :Współczynniki dla Ms = Mc = 30}
+    \label{fig:enter-label}
+\end{figure}
+
+\newpage
+\section{Wnioski}
+
+Na podstawie przeprowadzonej aproksymacji funkcji $f_1(x)$, $f_2(x)$ oraz $f_3(x)$ można wyciągnąć kilka istotnych wniosków.\\
+Przede wszystkim, aproksymacja funkcji okresowych za pomocą funkcji trygonometrycznych okazała się skuteczna. Wykresy funkcji aproksymowanych $F(x)$ w porównaniu do funkcji oryginalnych $f(x)$ pokazują, że przy odpowiednio dobranych wartościach $M_s$ oraz $M_c$, aproksymowane funkcje dobrze odwzorowują kształt i zachowanie funkcji pierwotnych.\\
+Dla funkcji $f_1(x)$, w przypadku gdy $\alpha = 0$ oraz $(M_s, M_c) = (5, 5)$, aproksymacja była dokładna, co jest widoczne na wykresach. Oznacza to, że przy takim doborze parametrów można uzyskać dokładne odwzorowanie funkcji.\\
+Dla funkcji $f_2(x)$, przy tych samych wartościach $(M_s, M_c) = (5, 5)$, również uzyskano dobrą aproksymację. Wskazuje to, że metoda jest uniwersalna i może być stosowana do różnych funkcji okresowych.\\
+W przypadku funkcji $f_3(x)$, gdzie rozpatrywano różne wartości $(M_s, M_c)$, wyniki wskazują, że zwiększenie liczby współczynników poprawia jakość aproksymacji. Szczególnie dla wartości $(M_s, M_c) = (10, 10)$, aproksymacja była bardziej dokładna w porównaniu do $(M_s, M_c) = (5, 0)$ czy $(M_s, M_c) = (5, 5)$. To pokazuje, że dla bardziej złożonych funkcji konieczne może być zwiększenie liczby współczynników, aby uzyskać lepsze przybliżenie.\\
+Dodatkowo, aproksymacja funkcji $f_1(x)$ dla różnych losowych wartości $\alpha$ z parametrami $(M_s, M_c) = (30, 30)$ pokazała, że metoda jest stabilna i skuteczna nawet przy zmiennych wartościach w funkcji. Większa liczba współczynników pozwala na lepsze dopasowanie się do funkcji o większej zmienności.\\
+Podsumowując, metoda aproksymacji funkcji okresowych za pomocą funkcji trygonometrycznych jest efektywna i wszechstronna. Dobór odpowiednich parametrów $(M_s, M_c)$ jest kluczowy dla uzyskania dokładnej aproksymacji, a zwiększenie liczby współczynników może znacząco poprawić jakość przybliżenia. Metoda ta jest szczególnie przydatna dla funkcji o wysokiej zmienności i złożoności.
+
+\end{document}
