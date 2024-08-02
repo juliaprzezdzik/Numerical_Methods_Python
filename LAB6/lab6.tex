@@ -1,0 +1,166 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage{tabularx} 
+\usepackage{geometry} 
+\usepackage{siunitx} 
+\usepackage{caption}
+\usepackage{amsmath} 
+\usepackage{float}
+\usepackage{array} 
+\captionsetup[figure]{labelformat=empty} 
+\usepackage{placeins}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{fancyhdr,lastpage}
+\usepackage{fancyvrb}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{tikz}
+\pagestyle{fancy}
+\newgeometry{tmargin=2cm, bmargin=2cm, lmargin=2cm, rmargin=2cm}
+\Large %wielkosc czcionki
+
+\begin{document}
+\Large
+
+\title{\LARGE Sprawozdanie nr 7 z przedmiotu Metody Numeryczne\\
+       \LARGE Interpolacja Lagrange’a z optymalizacją położeń węzłów.}
+\author{Julia Przeździk}
+\date{2 maja 2024 r.}
+\maketitle
+
+\rhead{\small{Interpolacja Lagrange'a}}
+\lhead{\small{Metody Numeryczne}}
+\cfoot{Strona \thepage\ z \pageref{LastPage}} 
+\large
+
+\section{Cel ćwiczenia}
+
+Zadanie polegało na zapoznaniu się z ideą interpolacji oraz napisaniu programu pozwalającego na zrealizowanie metody wyznaczającej przybliżoną wartość funkcji przy pomocy wielomianu interpolacyjnego Lagrange'a. Należało również przeprowadzić interpolację, narysować odpowiednie wykresy oraz na podstawie danych wysunąć stosowne wnioski. 
+
+\section{Opis problemu}
+
+Problem polegał na znalezieniu wielomianu interpolacyjnego Lagrange’a $W_n(x)$ dla funkcji:
+\begin{equation*}
+f(x) = \exp(-x^2)
+\end{equation*}
+gdzie $x \in [-5, 5]$. Należało wyznaczyć przybliżoną wartość funkcji w położeniu międzywęzłowym za pomocą wielomianu interpolacyjnego Lagrange'a. Argumentami były wektor węzłów, wektor wartości funkcji w węzłach, stopień wielomianu, który jest zawsze o jeden niższy niż liczba węzłów, a także wartość x, dla której wyliczana jest wartość funkcji. Węzły indeksowane są jako $x_0, x_1, x_2, ..., x_n$. Oznacza to, że dla ilości n węzłów poszukiwany wielomian jest stopnia n+1. \\
+Należało przeprowadzić interpolację podanej funkcji dla n = 5, 10, 15, 20. Węzły miały być równoodległe, a pierwszy i ostatni wyznaczały krańce przedziału interpolacji. Dla każdego n należało stworzyć wykresy funkcji $f$ oraz wielomianu interpolacyjnego na jednym rysunku. \\
+Następnie należało zoptymalizować położenia węzłów, które określone są jako zera wielomianów Czebyszewa:
+
+\begin{equation*}
+x_m = \frac{1}{2} \left[ (x_{\text{max}} - x_{\text{min}}) \cos\left(\frac{\pi (2m+1)}{2n+2}\right) + (x_{\text{min}} + x_{\text{max}}) \right]
+\end{equation*}
+
+\noindent
+Gdzie m = 0,1, ...n, a (n+1) jest całkowitą liczbą węzłów i równocześnie stopniem wielomianu Czebyszewa. Należało również sporządzić wykresy funkcji $f$ oraz $W_n(x)$.
+
+\section{Część teoretyczna}
+
+\subsection{Idea interpolacji wielomianowej}
+
+W danym przedziale [a,b] znajduje się n+1 węzłów iterpolacji: $x_0, x_1, x_2, ..., x_n$ oraz wartości funkcji w tych punktach: $f(x_0) = y_0, f(x_1) = y_1, ..., f(x_n) = y_n$. Ideą interpolacji jest wyznaczanie przybliżonych wartości funkcji $f$ w punktach, które nie są węzłami oraz oszacowanie błędu przybliżonych wartości.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Zrzut ekranu 2024-05-16 o 20.45.03.png}
+    \caption{\textbf{Rysunek nr 1:} Funkcje f(x), F(x) oraz węzły interpolacji}
+    \label{fig:enter-label}
+\end{figure}
+
+\noindent
+Następnie należy wyznaczyć funkcję interpolującą $F(x)$. \\
+Interpolacja weielomianowa umożliwia między innymi przybliżanie funkcji mocno złożonych wielomianem, co może znacznie ułatwić obliczenia numeryczne. 
+
+\subsection{Interpolacja Lagrange'a}
+Posiadając wielomian postaci
+\begin{equation*}
+    W_n(x) = a_0 + a_1x + a_2x^2 + ... + a_nx^n
+\end{equation*}
+Należy pogrupować składniki; w efekcie powstaje:
+\begin{equation*}
+    W_n(x) = y_0\Phi_0(x) + y_1\Phi_1(x) + ... + y_n\Phi_n(x)
+\end{equation*}
+Gdzie funkcje $\Phi_i(x)$ to wielomiany maksymalnie stopnia n. Dla dowolnego $x_i$ zachodzi zależność $W_n(x_i) = y_0\Phi_0(x_i) + ... + y_n\Phi_n(x_i)$, z czego wynika zależność:
+
+\begin{equation*}
+\Phi_j(x_i) = \begin{cases}
+0 & \text{gdy } j \neq i \\
+1 & \text{gdy } j = i
+\end{cases}
+\end{equation*}
+
+W celu określenia funkcji $\Phi_j(x)$ należy znaleźć wielomian zerujący się w węzłach $x_i = x_j$ i przyjmujący wartość 1 dla węzła $x_j$. W wyniku poszukiwań powstaje wielomian węzłowy Lagrange'a:
+
+
+\begin{equation*}
+\Phi_j(x) = \frac{(x - x_0)(x - x_1) \cdots (x - x_{j-1})(x - x_{j+1}) \cdots (x - x_n)}
+{(x_j - x_0)(x_j - x_1) \cdots (x_j - x_{j-1})(x_j - x_{j+1}) \cdots (x_j - x_n)}
+\end{equation*}
+
+Natomiast wielomian interpolacyjny Lagrange'a prezentuje się następująco:
+
+\begin{equation*}
+W_n(x) = \sum_{j=0}^{n} y_j \frac{\omega_n(x)}{(x - x_j) \left\{ \frac{\omega_n(x)}{x - x_j} \right\}}_{\bigg|_{x = x_j}}
+= \sum_{j=0}^{n} y_j \frac{\omega_n(x)}{(x - x_j) \omega'_n(x_j)}
+\end{equation*}
+
+\subsection{Zastosowanie metody}
+
+Po stworzeniu odpowiedniej funkcji w języku Python przy pomocy biblioteki NumPy powstały następujące wykresy:
+
+\subsubsection{n = 5}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-05-18 o 22.35.09.png}
+    \caption{\textbf{Rysunek nr 1: } Wykresy funkcji f(x) oraz Wn(x) dla n = 5}
+    \label{fig:enter-label}
+\end{figure}
+
+\subsubsection{n = 10}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-05-18 o 22.37.24.png}
+    \caption{\textbf{Rysunek nr 2: }Wykresy funkcji f(x) oraz Wn(x) dla n = 10}
+    \label{fig:enter-label}
+\end{figure}
+
+\subsubsection{n = 15}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-05-23 o 09.22.05.png}
+    \caption{\textbf{Rysunek nr 3: }Wykresy funkcji f(x) oraz Wn(x) dla n = 15}
+    \label{fig:enter-label}
+\end{figure}
+    
+\subsubsection{n = 20}
+
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-05-18 o 22.39.48.png}
+        \caption{\textbf{Rysunek nr 4: }Wykresy funkcji f(x) oraz Wn(x) dla n = 20}
+        \label{fig:enter-label}
+    \end{figure}
+
+\newpage
+\section{Wnioski}
+
+Po przeprowadzeniu interpolacji funkcji $f(x) = exp(-x^2)$ przy użyciu wielomianów interpolacyjnych Lagrange'a, zarówno dla równomiernie rozmieszczonych węzłów, jak i węzłów Czebyszewa, można wyciągnąć kilka istotnych wniosków.\\
+Przede wszystkim, wykresy interpolacji dla różnych wartości n pokazują wyraźne różnice w dokładności przybliżenia funkcji. Dla niewielkiej liczby węzłów, takich jak n=5, wielomiany interpolacyjne dobrze przybliżają funkcję $f(x)$ w całym przedziale. W miarę zwiększania liczby węzłów, szczególnie przy równomiernie rozmieszczonych węzłach, zauważalny staje się efekt Rungego, który powoduje oscylacje na krańcach przedziału. Oscylacje te stają się bardziej wyraźne dla większych wartości $n$, jak $n = 15 $, czy $n = 20$, co prowadzi do znacznych błędów interpolacji na brzegach przedziału.\\
+Natomiast zastosowanie węzłów Czebyszewa znacząco zmniejsza ten efekt. Węzły te są gęściej rozmieszczone na krańcach przedziału, co pomaga zredukować oscylacje i prowadzi do bardziej stabilnych wyników interpolacji. Wykresy pokazują, że dla $n = 10$, $n = 15$, $n = 20$ wielomiany interpolacyjne z węzłami Czebyszewa lepiej przybliżają funkcję $f(x)$ niż te z równomiernie rozmieszczonymi węzłami.\\
+Podsumowując, interpolacja Lagrange'a jest skuteczna przy małej liczbie węzłów, ale dla większych wartości 
+n
+n węzły Czebyszewa są preferowane, aby uniknąć oscylacji i uzyskać bardziej dokładne przybliżenie funkcji. Wybór odpowiednich węzłów ma kluczowe znaczenie dla dokładności interpolacji, a optymalizacja ich rozmieszczenia może znacznie poprawić wyniki.
+
+\section{Źródła}
+
+\href{http://galaxy.agh.edu.pl/chwiej/mn/wyk/interpolacja.pdf}
+
+\end{document}
