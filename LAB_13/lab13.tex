@@ -1,0 +1,311 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage{tabularx} 
+\usepackage{geometry} 
+\usepackage{siunitx} 
+\usepackage{caption}
+\usepackage{amsmath} 
+\usepackage{float}
+\usepackage{array} 
+\captionsetup[figure]{labelformat=empty} 
+\usepackage{placeins}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{fancyhdr,lastpage}
+\usepackage{fancyvrb}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tikz}
+\pagestyle{fancy}
+\newgeometry{tmargin=2cm, bmargin=2cm, lmargin=2cm, rmargin=2cm}
+\Large 
+
+\begin{document}
+\Large
+
+\title{\LARGE Sprawozdanie nr 13 z przedmiotu Metody Numeryczne\\
+       \LARGE Całkowanie numeryczne przy użyciu kwadratur Gaussa}
+\author{Julia Przeździk}
+\date{18 czerwca 2024 r.}
+\maketitle
+
+\rhead{\small{Całkowanie numeryczne przy użyciu kwadratur Gaussa}}
+\lhead{\small{Metody Numeryczne}}
+\cfoot{Strona \thepage\ z \pageref{LastPage}} 
+\large
+
+\section{Cel ćwiczenia}
+Zadanie polegało na wyliczeniu właściwych i niewłaściwych całek w celu zapoznania się z ideą  kwadratur Gaussa i możliwością ich wykorzystania w całkowaniu numerycznym.
+
+\section{Opis problemu}
+
+Na początku należało obliczyć numerycznie przy użyciu kwadratury Gaussa-Legendre'a wartość całki
+\begin{equation*}
+c_1 = \int_{0}^{2} \frac{x}{4x^2 + 1} dx
+\end{equation*}
+\noindent
+Wartość dokładną można było obliczyć korzystając z rozwiązania analitycznego
+\begin{equation*}
+c_{1,a} = \int \frac{x}{a^2 x^2 \pm c^2} dx = \frac{1}{2a^2} \ln|a^2 x^2 \pm c^2|
+\end{equation*}
+
+\noindent
+Następnie należało wykonać wykres $|c_1 - c_{1,a}| = f(n)$, dla liczby węzłów $n = 2, 3, \ldots, 20$.
+\noindent
+Kolejne zadanie polegało na obliczeniu numerycznie przy użyciu kwadratury Gaussa-Laguerre'a wartości całki
+\begin{equation*}
+c_2 = \int_{0}^{\infty} x^k \exp(-x) dx
+\end{equation*}
+
+\noindent
+Wartość dokładną można było obliczyć korzystając z rozwiązania analitycznego
+\begin{equation*}
+c_{2,a} = \int_{0}^{\infty} x^k \exp(-x) dx = k!
+\end{equation*}
+
+\noindent
+Następnie należało wykonać wykresy: $|c_2 - c_{2,a}| = f(n)$, dla $k = 5$ i dla liczby węzłów $n = 2, 3, \ldots, 20$ oraz  $|c_2 - c_{2,a}| = f(n)$, dla $k = 10$ i dla liczby węzłów $n = 2, 3, \ldots, 20$.
+\noindent
+Kolejne ćwiczenie polegało na obliczneiu numerycznie przy użyciu kwadratury Gaussa-Hermite'a wartości podwójnej całki
+\begin{equation*}
+c_3 = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} \sin^2(x) \sin^4(y) \exp(-x^2 - y^2) dx dy \quad (c_{\text{dok}} = 0.1919832644)
+\end{equation*}
+
+\noindent
+Należało również wykonać wykonać wykres $|c_3 - c_{\text{dok}}| = f(n)$, dla liczby węzłów $n = 2, 3, \ldots, 15$.
+
+\section{Część teoretyczna}
+
+Kwadratury Gaussa to metody \textit{całkowania numerycznego} polegające na takim wyborze wag $w_1, w_2, \ldots, w_n$ i węzłów interpolacji $t_1, t_2, \ldots, t_n \in [a, b]$ aby wyrażenie
+\begin{equation*}
+\sum_{i=1}^{n} w_i f(t_i)
+\end{equation*}
+najlepiej przybliżało całkę
+\begin{equation*}
+I(f) = \int_{a}^{b} w(x)f(x)dx,
+\end{equation*}
+gdzie $f$ jest dowolną funkcją określoną na odcinku $[a, b]$, a $w$ jest tzw. funkcją wagową spełniającą warunki
+\begin{enumerate}
+    \item $w(x) > 0$,
+    \item $\forall_{k \in \mathbb{N}} \int_{a}^{b} x^k w(x) dx$ jest skończona,
+    \item Jeżeli $p$ jest wielomianem takim, że $\forall_{x \in [a,b]} p(x) \geq 0$, to jeśli $\int_{a}^{b} w(x)p(x)dx = 0$, wtedy $p \equiv 0$.
+\end{enumerate}
+
+\noindent
+Określmy iloczyn skalarny z wagą
+\begin{equation*}
+\langle f, g \rangle_{w} = \int_{a}^{b} w(x) f(x) g(x) dx.
+\end{equation*}
+
+\noindent
+Dwa wielomiany są ortogonalne względem tego iloczynu skalarnego, jeśli $\langle f, g \rangle_{w} = 0$.
+\noindent
+Wszystkie kwadratury Gaussa wywodzą się z twierdzenia udowodnionego przez niego:
+
+\begin{enumerate}
+    \item Jeżeli $t_1, t_2, \ldots, t_n \in [a, b]$ są pierwiastkami $n$-tego wielomianu ortogonalnego $p_n(x)$ oraz $w_1, w_2, \ldots, w_n$ są rozwiązaniami układu równań:
+    \begin{equation*}
+    \begin{cases}
+        p_0(t_1) w_1 + \ldots + p_0(t_n) w_n &= \langle p_0, p_0 \rangle_{w} \\
+        p_1(t_1) w_1 + \ldots + p_1(t_n) w_n &= 0 \\
+        \vdots \\
+        p_{n-1}(t_1) w_1 + \ldots + p_{n-1}(t_n) w_n &= 0
+    \end{cases}
+    \end{equation*}
+\noindent
+    dla każdego wielomianu $p$ stopnia nie większego niż $2n - 1$ zachodzi
+    \begin{equation*}
+    \int_{a}^{b} w(x)p(x)dx = \sum_{i=1}^{n} w_i p(t_i). \quad (*)
+    \end{equation*}
+    
+    Ponadto $w_i > 0$.
+    
+    \item Jeżeli dla pewnego ciągu węzłów $x_1, x_2, \ldots, x_n \in [a, b]$ oraz ciągu wag $v_1, v_2, \ldots, v_n$ dla dowolnego wielomianu $p$ stopnia nie większego niż $2n - 1$ zachodzi warunek $(*)$, to $x_i = t_i$ oraz $v_i = w_i$ z dokładnością do kolejności.
+    
+    \item Dla dowolnego ciągu węzłów $x_1, x_2, \ldots, x_n \in [a, b]$ oraz ciągu wag $v_1, v_2, \ldots, v_n$ istnieje wielomian stopnia $2n$, dla którego nie zachodzi warunek $(*)$.
+\end{enumerate}
+
+\noindent
+Kwadratury z \textit{przedziału} $[-1, 1]$ z wagą $w \equiv 1$ to kwadratury Gaussa-Legendre'a
+\begin{equation*}
+I(f) = \int_{-1}^{1} f(x) dx \approx \sum_{i=1}^{n} w_i f(t_i),
+\end{equation*}
+gdzie $t_i$ to \textit{pierwiastki} n-tego \textit{wielomianu Legendre'a}.
+
+\noindent
+Kwadratury z wagą $w(x) = e^{-x}$ nazywamy kwadraturami Gaussa-Laguerre'a
+\begin{equation*}
+I(f) = \int_{0}^{\infty} e^{-x} f(x) dx \approx \sum_{i=1}^{n} w_i f(t_i),
+\end{equation*}
+gdzie $t_i$ to pierwiastki n-tego \textit{wielomianu Laguerre'a}.
+\noindent
+Kwadratury z wagą $w(x) = e^{-x^2}$ nazywamy kwadraturami Gaussa-Hermite'a
+\begin{equation*}
+I(f) = \int_{-\infty}^{\infty} e^{-x^2} f(x) dx \approx \sum_{i=1}^{n} w_i f(t_i),
+\end{equation*}
+gdzie $t_i$ to pierwiastki n-tego \textit{wielomianu Hermite'a}.
+
+\section{Wykorzystanie metody i otrzymane wyniki} 
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ccc}
+\toprule
+Liczba węzłów (n) & Błąd bezwzględny \(|c_3 - c_{\text{dok}}|\) \\
+\midrule
+2  & 0.10511129658668245  \\
+3  & 0.1799388875299586   \\
+4  & 0.16422144413869394  \\
+5  & 0.16217769532040988  \\
+6  & 0.1694836641002307   \\
+7  & 0.16103332931392078  \\
+8  & 0.1672299192989416   \\
+9  & 0.16293873745843435  \\
+10 & 0.16558650437443537  \\
+11 & 0.16401669137696012  \\
+12 & 0.1649038019866156   \\
+13 & 0.16441691842310513  \\
+14 & 0.16467692142475499  \\
+15 & 0.1645409962401517   \\
+\bottomrule
+\end{tabular}
+\caption{Błąd bezwzględny w kwadraturze Gaussa-Legendre'a}
+\label{tab:error}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-06-18 o 22.13.07.png}
+    \caption*{}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-06-18 o 22.13.53.png}
+    \caption*{}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cc}
+\toprule
+Liczba węzłów (n) & Suma współczynników (k=5) \\
+\midrule
+2  & 1.0000000000000000 \\
+3  & 1.0000000000000000 \\
+4  & 1.0000000000000002 \\
+5  & 1.0000000000000000 \\
+6  & 0.9999999999999997 \\
+7  & 1.0000000000000000 \\
+8  & 0.9999999999999998 \\
+9  & 1.0000000000000000 \\
+10 & 1.0000000000000000 \\
+11 & 1.0000000000000000 \\
+12 & 0.9999999999999996 \\
+13 & 0.9999999999999999 \\
+14 & 1.0000000000000002 \\
+15 & 1.0000000000000000 \\
+16 & 0.9999999999999999 \\
+17 & 0.9999999999999999 \\
+18 & 1.0000000000000000 \\
+19 & 1.0000000000000004 \\
+20 & 0.9999999999999998 \\
+\bottomrule
+\end{tabular}
+\caption{Suma współczynników w kwadraturze Gaussa-Laguerre'a dla k=5}
+\label{tab:coeff_k5}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cc}
+\toprule
+Liczba węzłów (n) & Suma współczynników (k=10) \\
+\midrule
+2  & 1.0000000000000000 \\
+3  & 1.0000000000000000 \\
+4  & 1.0000000000000002 \\
+5  & 1.0000000000000000 \\
+6  & 0.9999999999999997 \\
+7  & 1.0000000000000000 \\
+8  & 0.9999999999999998 \\
+9  & 1.0000000000000000 \\
+10 & 1.0000000000000000 \\
+11 & 1.0000000000000000 \\
+12 & 0.9999999999999996 \\
+13 & 0.9999999999999999 \\
+14 & 1.0000000000000002 \\
+15 & 1.0000000000000000 \\
+16 & 0.9999999999999999 \\
+17 & 0.9999999999999999 \\
+18 & 1.0000000000000000 \\
+19 & 1.0000000000000004 \\
+20 & 0.9999999999999998 \\
+\bottomrule
+\end{tabular}
+\caption{Suma współczynników w kwadraturze Gaussa-Laguerre'a dla k=10}
+\label{tab:coeff_k10}
+\end{table}
+
+\clearpage
+\newpage
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-06-18 o 22.35.22.png}
+    \caption*{}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-06-18 o 22.36.25.png}
+    \caption*{}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-06-18 o 22.37.00.png}
+    \caption*{}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Zrzut ekranu 2024-06-18 o 22.37.29.png}
+    \caption*{Enter Caption}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\linewidth]{Zrzut ekranu 2024-06-18 o 23.04.32.png}
+    \caption*{}
+    \label{fig:enter-label}
+\end{figure}
+
+\section{Wnioski}
+Celem ćwiczenia było zrozumienie i zastosowanie kwadratur Gaussa do obliczania całek numerycznych.\\
+\noindent
+Pierwsze zadanie wykazało, że kwadratura Gaussa-Legendre'a jest skuteczna w przybliżaniu całek na skończonym przedziale 
+[0,2]. Wzrost liczby węzłów 
+n prowadził do zmniejszenia błędu, co potwierdza dokładność tej metody.\\
+\noindent
+Drugie zadanie dotyczyło kwadratury Gaussa-Laguerre'a dla przedziału 
+[0,$\infty$] i różnych wartości 
+k. Metoda okazała się precyzyjna, a błędy zmniejszały się wraz ze wzrostem liczby węzłów, co potwierdziło jej skuteczność. \\
+\noindent
+Ostatnie zadanie, wykorzystujące kwadraturę Gaussa-Hermite'a do obliczenia podwójnej całki, również wykazało dużą dokładność metody. Błąd bezwzględny szybko malał do wartości bliskiej zeru przy odpowiedniej liczbie węzłów. \\
+\noindent
+Podsumowując, wszystkie trzy metody kwadratur Gaussa były bardzo skuteczne, a ich wszechstronność i dokładność potwierdzają przydatność w różnych zastosowaniach numerycznych.
+
+\end{document}
